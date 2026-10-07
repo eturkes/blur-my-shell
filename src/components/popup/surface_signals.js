@@ -1,4 +1,5 @@
 import Meta from 'gi://Meta';
+import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const SURFACE_SIGNALS = [
@@ -37,11 +38,14 @@ export const PopupBlurSurfaceSignals = class PopupBlurSurfaceSignals {
 
         const is_heavy_surface = this.surface.is_heavy_surface();
 
-        SURFACE_SIGNALS.forEach(signal => {
+        const signals = actor instanceof St.Widget
+            ? [...SURFACE_SIGNALS, 'style-changed']
+            : SURFACE_SIGNALS;
+        signals.forEach(signal => {
             let id = actor.connect(signal, () => {
                 this.clear_pending_idles();
                 const is_visibility_change = signal === 'notify::visible' || signal === 'notify::mapped';
-                if (is_heavy_surface || is_visibility_change) {
+                if (is_heavy_surface || is_visibility_change || signal === 'style-changed') {
                     this.surface.queue_update();
                     return;
                 }

@@ -7,6 +7,7 @@ import { ApplicationsService } from '../dbus/services.js';
 import { PaintSignals } from '../conveniences/paint_signals.js';
 import { DummyPipeline } from '../conveniences/dummy_pipeline.js';
 import { Pipeline } from '../conveniences/pipeline.js';
+import { attachWindowMask } from '../effects/window_mask.js';
 
 
 /// Converts a wildcard pattern to a RegExp object.
@@ -373,6 +374,10 @@ export const ApplicationsBlur = class ApplicationsBlur {
         // update corner radius based on window state
         this.update_corner_radius(meta_window);
 
+        if (this.settings.applications.STATIC_BLUR) {
+            meta_window._bms_window_alpha_mask = attachWindowMask(meta_window);
+        }
+
         this.reconcile_window_visibility(meta_window);
 
         // now set up the signals, for the window actor only: they are disconnected
@@ -471,10 +476,12 @@ export const ApplicationsBlur = class ApplicationsBlur {
             && !is_fullscreen
             && (this.settings.applications.BLUR_ON_OVERVIEW || !overview_visible);
 
-        if (show_blur)
+        if (show_blur) {
             blur_actor.show();
-        else
+            meta_window._bms_window_alpha_mask?.refresh();
+        } else {
             blur_actor.hide();
+        }
 
         this.set_window_opacity(window_actor, show_blur
             ? this.settings.applications.OPACITY
@@ -573,6 +580,9 @@ export const ApplicationsBlur = class ApplicationsBlur {
             let bg_manager = meta_window.bg_manager;
 
             if (blur_actor && window_actor) {
+                meta_window._bms_window_alpha_mask?.destroy();
+                delete meta_window._bms_window_alpha_mask;
+
                 // reset the opacity
                 this.set_window_opacity(window_actor, 255);
 

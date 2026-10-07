@@ -167,7 +167,24 @@ export const PopupBlurSurface = class PopupBlurSurface {
             || this.style.has_any_style_class(this.root_actor, IS_HEAVY_SURFACE_STYLE_CLASSES);
     }
 
+    has_opaque_native_background() {
+        if (this.settings.popup.OVERRIDE_BACKGROUND || !this.target.get_theme_node)
+            return false;
+
+        const node = this.target.get_theme_node();
+        // Inspect the theme, not the animated actor opacity. A native fade
+        // must not briefly introduce a second background around rounded edges.
+        return node.get_background_color().alpha === 255
+            && node.get_background_gradient()[0] === St.GradientType.NONE
+            && !node.get_background_image()
+            && !node.get_border_image();
+    }
+
     update() {
+        if (this.has_opaque_native_background()) {
+            this.hide_surface();
+            return;
+        }
         if (this.is_notification_surface()) {
             this.update_live_surface();
             return;
@@ -382,6 +399,7 @@ export const PopupBlurSurface = class PopupBlurSurface {
     update_settings() {
         this.style.update_target_style();
         this.static_actor?.update_settings();
+        this.queue_update();
     }
 
     get_corner_radius() {

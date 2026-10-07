@@ -1,3 +1,8 @@
+> **Personal Aeon fork:** this repository carries local GNOME 50 fixes and
+> builds `blur-my-shell@eturkes.com`. See [PERSONAL.md](PERSONAL.md) for the
+> source/update policy, checks, first-install migration, and rollback procedure.
+> The upstream installation instructions below do not install this personal build.
+
 # GNOME Shell Extension - Blur my Shell
 
 [<img src="https://github.com/aunetx/files_utils/raw/master/get_it_on_gnome_extensions.png" height="100" align="right">](https://extensions.gnome.org/extension/3193/blur-my-shell/)

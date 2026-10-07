@@ -148,7 +148,7 @@ export const PanelBlur = class PanelBlur {
         // final size and position by the compositor, avoiding race conditions
         // during extension startup.
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            if (!global.dashToPanel?.panels) {
+            if (!this.enabled || !global.dashToPanel?.panels) {
                 return GLib.SOURCE_REMOVE;
             }
 
@@ -174,6 +174,10 @@ export const PanelBlur = class PanelBlur {
                 this._isMainPanelAlive
             )
                 this.maybe_blur_panel(Main.panel);
+
+            // Panels are created after enable() initializes styling. Reapply
+            // it now so force-light-text and background settings take effect.
+            this.connect_to_windows_and_overview();
 
             return GLib.SOURCE_REMOVE;
         });
