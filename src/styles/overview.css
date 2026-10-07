@@ -1,5 +1,27 @@
 /*** OVERVIEW ***/
 
+/* Keep typing, selection and caret colors readable in every overview style.
+ * State selectors outrank light-theme entry focus/hover rules, without changing
+ * the theme's focus outline or the separate placeholder styling.
+ */
+.overview-components-transparent .search-entry,
+.overview-components-transparent .search-entry:hover,
+.overview-components-transparent .search-entry:focus,
+.overview-components-transparent .search-entry:focus:hover,
+.overview-components-light .search-entry,
+.overview-components-light .search-entry:hover,
+.overview-components-light .search-entry:focus,
+.overview-components-light .search-entry:focus:hover,
+.overview-components-dark .search-entry,
+.overview-components-dark .search-entry:hover,
+.overview-components-dark .search-entry:focus,
+.overview-components-dark .search-entry:focus:hover {
+    color: white;
+    caret-color: white;
+    selected-color: white;
+}
+
+
 /*
 * Add transparency to the workspace animation (between workspaces)
 */

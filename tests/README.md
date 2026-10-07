@@ -11,11 +11,12 @@ The stylesheet path is relative to the repository, or may be absolute. Without
 intentionally reproduce the upstream St cascade bug. Use the staged, flattened
 stylesheet when checking a build. Set `GJS` to override `/usr/bin/gjs`.
 
-The 21 checks execute production component methods with mocked scheduling and
+The 25 checks execute production component methods with mocked scheduling and
 rendering allocation, and query the real `St.ThemeNode` CSS cascade. They cover
 deferred Dash to Panel startup/teardown, opaque native popup suppression during
 fades, retained translucent/explicit popup styling, and both stylesheet load
-orders. No running Shell, GUI interaction, settings mutation, Node.js, or Python
+orders, including overview panel states and focused/hovered search text,
+selection and caret colors. No running Shell, GUI interaction, settings mutation, Node.js, or Python
 is required. They do not replace compositor pixel/rendering checks.
 
 ## Original failure evidence
@@ -41,3 +42,12 @@ works for these native color queries, but its finalizer emits a GLib-GObject
 null-backend disconnect diagnostic at process teardown. The runner neither
 filters that diagnostic nor changes the tests' exit status. A compositor test
 environment is required when running with fatal GLib criticals enabled.
+
+## Overview color regression evidence
+
+At `d1d7cd56953cfb06a4c09e3fdca5c9f0d5e7d5cd`, the expanded `make check`
+failed with three new state/cascade failures (22/25 checks passed). The checks
+cover both stylesheet load orders, panel interaction states, privacy/recording/
+sharing preservation, and all three overview search styles. The state-specific
+CSS correction brings the same suite to 25/25 without changing the original
+checks or their requirements.

@@ -1,3 +1,17 @@
 /* Representative direct extension-theme rules, as in Luminus. */
 #panel .panel-button { color: #222226; }
 .overview-tile:hover { background-color: #cfcfcf; }
+
+/* State-specific light-theme rules, matching the relevant Luminus selectors. */
+#panel:overview .panel-button,
+#panel:overview .panel-button.clock-display { color: #222226; }
+#panel:overview .panel-button#panelActivities .workspace-dot { background-color: #222226; }
+#panel:overview .panel-button.screen-recording-indicator,
+#panel:overview .panel-button.screen-sharing-indicator { color: #fafafb; }
+#panel .privacy-indicator { color: #e66100; }
+.search-entry { color: rgba(34, 34, 38, 0.7); selected-color: #222226; caret-color: #222226; }
+.search-entry:hover,
+.search-entry:focus,
+.search-entry:focus:hover { color: #222226; caret-color: #222226; }
+.search-entry:focus { box-shadow: inset 0 0 0 2px rgba(53, 132, 228, 0.8) !important; }
+.search-entry StLabel.hint-text { color: rgba(255, 255, 255, 0.7); }

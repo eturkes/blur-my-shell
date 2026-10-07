@@ -213,6 +213,58 @@ for (const bmsFirst of [false, true]) {
     });
 }
 
+// Interaction-state regressions must not depend on stylesheet load order.
+for (const bmsFirst of [false, true]) {
+    const order = bmsFirst ? 'first' : 'last';
+    function fixture() {
+        const context = new St.ThemeContext();
+        const theme = new St.Theme();
+        for (const file of bmsFirst ? [stylesheet, competing] : [competing, stylesheet])
+            theme.load_stylesheet(file);
+        return (parent, id, classes, pseudo = null, type = St.Widget.$gtype) =>
+            St.ThemeNode.new(context, parent, theme, type, id, classes, pseudo, '');
+    }
+    test(`panel states stay light in overview: BMS loaded ${order}`, () => {
+        const node = fixture();
+        const ui = node(null, null, 'panel-light-text');
+        for (const panelState of [null, 'overview']) {
+            const panel = node(ui, 'panel', null, panelState);
+            for (const state of [null, 'hover', 'focus', 'active', 'checked', 'active hover', 'checked hover', 'focus hover']) {
+                for (const [classes, color] of [
+                    ['panel-button', '#f6f5f4ff'],
+                    ['panel-button clock-display', '#f6f5f4ff'],
+                    ['panel-button screen-recording-indicator', '#f6f5f4ff'],
+                    ['panel-button screen-sharing-indicator', '#282828ff'],
+                ]) {
+                    const button = node(panel, null, classes, state);
+                    equal(button.get_foreground_color().to_string(), color, `${panelState}/${state}/${classes}`);
+                    equal(node(button, null, 'system-status-icon').get_foreground_color().to_string(), color,
+                        'status icon inherits the indicator foreground');
+                }
+                const activities = node(panel, 'panelActivities', 'panel-button', state);
+                equal(node(activities, null, 'workspace-dot').get_background_color().to_string(), '#f6f5f4ff',
+                    'workspace indicator stays light');
+            }
+            equal(node(panel, null, 'privacy-indicator').get_foreground_color().to_string(), '#e66100ff',
+                'privacy indicator keeps its warning color');
+        }
+    });
+    test(`search typing states stay white: BMS loaded ${order}`, () => {
+        const node = fixture();
+        for (const variant of ['transparent', 'light', 'dark']) {
+            const ui = node(null, null, `overview-components-${variant}`);
+            for (const state of [null, 'hover', 'focus', 'focus hover']) {
+                const entry = node(ui, null, 'search-entry', state);
+                equal(entry.get_foreground_color().to_string(), '#ffffffff', `${variant}/${state} text`);
+                equal(entry.get_color('caret-color').to_string(), '#ffffffff', `${variant}/${state} caret`);
+                equal(entry.get_color('selected-color').to_string(), '#ffffffff', `${variant}/${state} selection`);
+                const hint = node(entry, null, 'hint-text', null, St.Label.$gtype);
+                equal(hint.get_foreground_color().to_string(), '#ffffffb3', 'placeholder remains translucent white');
+            }
+        }
+    });
+}
+
 let failed = 0;
 for (const [name, callback] of tests) {
     try {
