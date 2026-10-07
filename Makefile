@@ -34,7 +34,7 @@ build: clean
 
 # Installs the private UUID only. Activation/session restart is deliberately manual.
 install: build
-	$(GNOME_EXTENSIONS) install -f build/$(UUID).shell-extension.zip
+	GNOME_EXTENSIONS=$(GNOME_EXTENSIONS) ./scripts/install-personal.sh build/$(UUID).shell-extension.zip
 
 check: build
 	./tests/run.sh --stylesheet build/source/stylesheet.css

@@ -19,10 +19,10 @@ files in `src/styles/`. The build flattens imports into the packaged stylesheet
 because GNOME St gives imported rules lower priority than direct extension CSS.
 Do not edit `build/source/stylesheet.css`.
 
-The running desktop was **not switched to the new UUID** when this fork was
-created. It still uses the patched `blur-my-shell@aunetx` installation until the
-one-time migration below. That old installation can still be overwritten by an
-upstream extension update; the private UUID is what isolates the personal build.
+The initial fork import preserved the running desktop without switching UUIDs.
+The one-time migration below selects the personal installation. The upstream
+`blur-my-shell@aunetx` identity remains subject to upstream extension updates;
+the private UUID is what isolates the personal build.
 
 ## Build and check
 
@@ -54,7 +54,8 @@ in which upstream has already loaded**. Never enable both copies together.
 2. Back up the current preferences and installed extension to a private local
    backup outside Git. Do not commit settings dumps or desktop captures.
 3. Run `make install`. This installs the personal archive, but does not enable
-   it or remove the upstream installation.
+   it or remove the upstream installation. The installer uses a temporary cache
+   beside the destination to avoid cross-filesystem/subvolume directory moves.
 4. Run `gnome-extensions disable blur-my-shell@aunetx`.
 5. Log out and back in.
 6. Run `gnome-extensions enable blur-my-shell@eturkes.com`.
