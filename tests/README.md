@@ -11,9 +11,10 @@ The stylesheet path is relative to the repository, or may be absolute. Without
 intentionally reproduce the upstream St cascade bug. Use the staged, flattened
 stylesheet when checking a build. Set `GJS` to override `/usr/bin/gjs`.
 
-The 25 checks execute production component methods with mocked scheduling and
+The 29 checks execute production component methods with mocked scheduling and
 rendering allocation, and query the real `St.ThemeNode` CSS cascade. They cover
-deferred Dash to Panel startup/teardown, opaque native popup suppression during
+deferred Dash to Panel startup/teardown, activation notifications for both
+upstream and personal Dash to Panel UUIDs, opaque native popup suppression during
 fades, retained translucent/explicit popup styling, and both stylesheet load
 orders, including overview panel states and focused/hovered search text,
 selection and caret colors. No running Shell, GUI interaction, settings mutation, Node.js, or Python
@@ -42,6 +43,13 @@ works for these native color queries, but its finalizer emits a GLib-GObject
 null-backend disconnect diagnostic at process teardown. The runner neither
 filters that diagnostic nor changes the tests' exit status. A compositor test
 environment is required when running with fatal GLib criticals enabled.
+
+## Private Dash to Panel regression evidence
+
+At `a81e24d`, the expanded runner passes 28/29 checks and fails the new
+`dash-to-panel@eturkes.com` activation case. The upstream identity, unrelated
+extension, and inactive-state controls pass. Recognizing both active Dash to
+Panel identities brings the unchanged suite to 29/29.
 
 ## Overview color regression evidence
 

@@ -81,7 +81,7 @@ function panelFixture(light, count) {
     component.blur_panel = panel => component.actors_list.push({
         widgets: {panel, background: new Actor(), background_group: new Actor()},
     });
-    return {component, connections, Main, drain() {
+    return {component, connections, Main, global, drain() {
         let remaining = 20;
         while (idles.length) {
             assert(--remaining > 0, 'panel scheduled an endless idle loop');
@@ -122,6 +122,30 @@ test('deferred DTP: disable before idle must not resurrect panels', () => {
     equal(fixture.connections.size, 0, 'disabled component must not reconnect signals');
     equal(fixture.Main.uiGroup.has_style_class_name('panel-light-text'), false, 'disabled style');
 });
+
+for (const [uuid, state, accepted] of [
+    ['dash-to-panel@eturkes.com', 1, true],
+    ['dash-to-panel@jderose9.github.com', 1, true],
+    ['other-extension@example.com', 1, false],
+    ['dash-to-panel@eturkes.com', 2, false],
+]) {
+    test(`DTP activation identity: ${uuid}, state=${state}`, () => {
+        const fixture = panelFixture(true, 1);
+        const {component, connections, Main, global} = fixture;
+        let refreshes = 0;
+        component.blur_existing_panels = () => refreshes++;
+        component.enable();
+        refreshes = 0;
+        const listener = connections.records.get(Main.extensionManager)
+            .find(record => record.signal === 'extension-state-changed');
+        listener.handler(null, {uuid, state});
+        equal(refreshes, accepted ? 1 : 0, 'only active DTP identities refresh panel blur');
+        const panelListeners = connections.records.get(global.dashToPanel) ?? [];
+        equal(panelListeners.filter(record => record.signal === 'panels-created').length,
+            accepted ? 1 : 0, 'active DTP must reconnect panel recreation notifications');
+        component.disable();
+    });
+}
 
 const PopupBlurSurface = loadClass('src/components/popup/blur_surface.js', 'PopupBlurSurface', {St});
 function popupFixture({alpha = 255, opacity = 255, override = false, gradient = St.GradientType.NONE,

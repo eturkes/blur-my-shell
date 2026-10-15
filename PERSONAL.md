@@ -12,6 +12,12 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 - Settings schema/path and gettext domain stay upstream-compatible, so the
   existing preferences and translations are reused.
 
+`75-personal.2` recognizes both `dash-to-panel@jderose9.github.com` and
+`dash-to-panel@eturkes.com` when reconnecting panel recreation notifications.
+The private Dash to Panel fork lives in `~/Projects/dash-to-panel`; see its
+`PERSONAL.md` before switching identities. Deploy this companion build before
+enabling the private panel. Both builds need a fresh login to load changed code.
+
 The imported code fixes cover deferred panel styling, exact application-surface
 masking (including compositing and redraw culling), and suppression of redundant
 blur beneath opaque native popups. CSS remains split into upstream component

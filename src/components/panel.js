@@ -9,7 +9,10 @@ import * as utils from '../conveniences/utils.js';
 import { Pipeline } from '../conveniences/pipeline.js';
 import { DummyPipeline } from '../conveniences/dummy_pipeline.js';
 
-const DASH_TO_PANEL_UUID = 'dash-to-panel@jderose9.github.com';
+const DASH_TO_PANEL_UUIDS = new Set([
+    'dash-to-panel@jderose9.github.com',
+    'dash-to-panel@eturkes.com',
+]);
 const PANEL_STYLES = [
     "transparent-panel",
     "light-panel",
@@ -53,7 +56,7 @@ export const PanelBlur = class PanelBlur {
             Main.extensionManager,
             'extension-state-changed',
             (_, extension) => {
-                if (extension.uuid === DASH_TO_PANEL_UUID
+                if (DASH_TO_PANEL_UUIDS.has(extension.uuid)
                     && extension.state === 1
                 ) {
                     this.connections.connect(
