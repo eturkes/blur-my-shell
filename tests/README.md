@@ -6,9 +6,8 @@ Run from any directory with the host's GJS and GNOME Shell/Mutter libraries:
 bash tests/run.sh --stylesheet build/source/stylesheet.css
 ```
 
-The stylesheet path is relative to the repository, or may be absolute. Without
-`--stylesheet`, the runner uses the authored `src/stylesheet.css`; its imports
-intentionally reproduce the upstream St cascade bug. Use the staged, flattened
+The stylesheet path is relative to the repository, or may be absolute. Use `make check` to generate the stylesheet first; v76 no longer has an authored
+`src/stylesheet.css`. Use the staged, flattened
 stylesheet when checking a build. Set `GJS` to override `/usr/bin/gjs`.
 
 The 29 checks execute production component methods with mocked scheduling and
@@ -59,3 +58,12 @@ cover both stylesheet load orders, panel interaction states, privacy/recording/
 sharing preservation, and all three overview search styles. The state-specific
 CSS correction brings the same suite to 25/25 without changing the original
 checks or their requirements.
+
+## Stable v76 update
+
+The production modules moved to `components/panel/` and `popup/surface/`.
+Fixtures now use real panel discovery, style helpers, and compositor-later
+scheduling, replacing GPU allocation only. All 29 existing behavior requirements
+are retained. Before the overview CSS adjustment, the updated suite passed 27/29:
+upstream placeholder and light-style typing colors failed both load orders.
+Preserving the personal white typing/placeholder rules restores 29/29.

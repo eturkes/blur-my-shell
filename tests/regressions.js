@@ -29,6 +29,8 @@ class Actor {
     remove_style_class_name(name) { this.classes.delete(name); }
     has_style_class_name(name) { return this.classes.has(name); }
     get_children() { return []; }
+    get_style() { return this.style ?? null; }
+    set_style(style) { this.style = style; }
     show() { this.visible = true; }
     hide() { this.visible = false; }
     destroy() { this.destroyed = true; }
@@ -52,22 +54,32 @@ class Connections {
 }
 
 function panelFixture(light, count) {
-    const idles = [];
+    const idles = new Map();
+    let nextId = 1;
     const Main = {
         panel: new Actor(), uiGroup: new Actor(), extensionManager: {},
-        layoutManager: {}, sessionMode: {},
-        overview: {_overview: {_controls: {_appDisplay: {}}}},
+        layoutManager: {}, sessionMode: {hasWindows: false},
+        overview: {visible: false},
     };
     const panels = Array.from({length: count}, (_, i) => i === 0 ? Main.panel : new Actor());
+    for (const panel of panels) panel.get_stage = () => true;
     const global = {
         dashToPanel: {panels: panels.map(panel => ({panel}))},
         display: {}, window_group: {}, window_manager: {},
+        compositor: {get_laters: () => ({
+            add(_priority, callback) { const id = nextId++; idles.set(id, callback); return id; },
+            remove(id) { idles.delete(id); },
+        })},
     };
-    const PanelBlur = loadClass('src/components/panel.js', 'PanelBlur', {
-        Main, global, GLib: {
-            PRIORITY_DEFAULT_IDLE: 0, SOURCE_REMOVE: false,
-            idle_add(_priority, callback) { idles.push(callback); return idles.length; },
-        },
+    const deps = {Main, global, GLib: {SOURCE_REMOVE: false},
+        Meta: {LaterType: {BEFORE_REDRAW: 0}}, Connections};
+    const PanelDiscovery = loadClass('src/components/panel/panel_discovery.js', 'PanelDiscovery', deps);
+    const styles = loadClass('src/components/panel/panel_style.js',
+        '{update_light_text, set_panel_style_class, overview_aware_style}', {
+            getRoundedCorners: () => ({}), get_component_style: value => value,
+        });
+    const PanelBlur = loadClass('src/components/panel/index.js', 'PanelBlur', {
+        ...deps, ...styles, PanelDiscovery, connect_system_style_changes() {},
     });
     const connections = new Connections();
     const settings = {
@@ -76,16 +88,21 @@ function panelFixture(light, count) {
         dash_to_panel: {BLUR_ORIGINAL_PANEL: true}, hidetopbar: {COMPATIBILITY: false},
     };
     const component = new PanelBlur(connections, settings, {});
-    // Replace GPU allocation only. maybe_blur_panel, enable/disable, the idle
-    // callback, connection rebinding, and light-text application stay production.
-    component.blur_panel = panel => component.actors_list.push({
-        widgets: {panel, background: new Actor(), background_group: new Actor()},
-    });
+    // Replace GPU allocation only; discovery, visibility, styles, and cleanup stay real.
+    component.blur_panel = panel => {
+        component.actors_list.push({
+            widgets: {panel, panel_box: Main.uiGroup, background: new Actor(), background_group: new Actor()},
+            signal_records: [], pipeline: {destroy() {}}, bg_manager: {destroy() {}},
+        });
+        component.update_visibility();
+    };
     return {component, connections, Main, global, drain() {
         let remaining = 20;
-        while (idles.length) {
+        while (idles.size) {
             assert(--remaining > 0, 'panel scheduled an endless idle loop');
-            idles.shift()();
+            const [id, callback] = idles.entries().next().value;
+            idles.delete(id);
+            callback();
         }
     }};
 }
@@ -102,7 +119,7 @@ for (const light of [false, true]) {
             equal(Main.uiGroup.has_style_class_name('panel-light-text'), light,
                 'light-text preference must apply after deferred panel creation');
             const connectionCount = connections.size;
-            component.blur_dtp_panels();
+            component.discovery.blur_dtp_panels();
             fixture.drain();
             equal(component.actors_list.length, count, 'repeat notification must not duplicate panels');
             equal(connections.size, connectionCount, 'repeat notification must not duplicate signals');
@@ -133,8 +150,11 @@ for (const [uuid, state, accepted] of [
         const fixture = panelFixture(true, 1);
         const {component, connections, Main, global} = fixture;
         let refreshes = 0;
-        component.blur_existing_panels = () => refreshes++;
+        component.discovery.blur_existing_panels = () => refreshes++;
         component.enable();
+        // Simulate DTP appearing after BMS startup, as in the original regression.
+        connections.disconnect_all_for(global.dashToPanel);
+        component.discovery.dash_to_panel = null;
         refreshes = 0;
         const listener = connections.records.get(Main.extensionManager)
             .find(record => record.signal === 'extension-state-changed');
@@ -147,7 +167,9 @@ for (const [uuid, state, accepted] of [
     });
 }
 
-const PopupBlurSurface = loadClass('src/components/popup/blur_surface.js', 'PopupBlurSurface', {St});
+const PopupBlurSurface = loadClass('src/components/popup/surface/blur_surface.js', 'PopupBlurSurface', {
+    St, has_any_style_class: (actor, classes) => classes.some(c => actor.classes.has(c)),
+});
 function popupFixture({alpha = 255, opacity = 255, override = false, gradient = St.GradientType.NONE,
     image = null, borderImage = null, kind = 'popup-menu-content', staticBlur = true} = {}) {
     const target = new Actor();

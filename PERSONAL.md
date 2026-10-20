@@ -12,6 +12,13 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 - Settings schema/path and gettext domain stay upstream-compatible, so the
   existing preferences and translations are reused.
 
+`76-personal.1` merges upstream stable **v76** (not unreleased `master`).
+The private Dash to Panel identities, window alpha mask, opaque native popup
+suppression, and overview color fixes are retained in v76's reorganized modules.
+Upstream now bundles the component stylesheets directly; the personal build uses
+that ordered list and packages all new source directories. The 29 native checks
+pass on GNOME Shell 50.5; fresh-login desktop/compositor checks remain pending.
+
 `75-personal.2` recognizes both `dash-to-panel@jderose9.github.com` and
 `dash-to-panel@eturkes.com` when reconnecting panel recreation notifications.
 The private Dash to Panel fork lives in `~/Projects/dash-to-panel`; see its
@@ -21,8 +28,9 @@ enabling the private panel. Both builds need a fresh login to load changed code.
 The imported code fixes cover deferred panel styling, exact application-surface
 masking (including compositing and redraw culling), and suppression of redundant
 blur beneath opaque native popups. CSS remains split into upstream component
-files in `src/styles/`. The build flattens imports into the packaged stylesheet
-because GNOME St gives imported rules lower priority than direct extension CSS.
+files in `src/styles/`. The build concatenates the ordered `STYLESHEETS` list
+into the packaged stylesheet because GNOME St gives imported rules lower
+priority than direct extension CSS.
 Do not edit `build/source/stylesheet.css`.
 
 The initial fork import preserved the running desktop without switching UUIDs.
@@ -45,9 +53,8 @@ Dependencies: GNU Make, GJS, GNOME Shell/Mutter runtime libraries,
 See [tests/README.md](tests/README.md) for scope and original failure evidence.
 The artifact is `build/blur-my-shell@eturkes.com.shell-extension.zip`.
 
-The stylesheet bundler preserves import order. It rejects unsupported imports
-and relative asset URLs instead of silently changing their meaning. If upstream
-adds those, adapt the bundler and its checks before installing the update.
+The stylesheet bundle preserves the explicit order in the Makefile. Review that
+list and any newly introduced CSS imports or relative asset URLs before updating.
 
 ## One-time migration
 
