@@ -12,6 +12,11 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 - Settings schema/path and gettext domain stay upstream-compatible, so the
   existing preferences and translations are reused.
 
+`76-personal.2` restores dark Overview search text, caret, and placeholder for
+light search surfaces. Dark/transparent fields keep light text. The v76 update's
+blanket white override was incorrect; native checks now distinguish styles and
+cover both ancestor and entry-local style classes in both stylesheet load orders.
+
 `76-personal.1` merges upstream stable **v76** (not unreleased `master`).
 The private Dash to Panel identities, window alpha mask, opaque native popup
 suppression, and overview color fixes are retained in v76's reorganized modules.

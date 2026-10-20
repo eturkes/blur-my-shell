@@ -67,3 +67,11 @@ scheduling, replacing GPU allocation only. All 29 existing behavior requirements
 are retained. Before the overview CSS adjustment, the updated suite passed 27/29:
 upstream placeholder and light-style typing colors failed both load orders.
 Preserving the personal white typing/placeholder rules restores 29/29.
+
+## Overview light-search correction
+
+The previous white-text requirement for every Overview style was incorrect for
+v76's light search backgrounds. The corrected checks require dark text/caret/
+selection and a dark placeholder in light mode; dark and transparent modes retain
+light colors. Both ancestor and entry-local style classes are checked across
+normal, hover, focus, and combined states in both stylesheet load orders.

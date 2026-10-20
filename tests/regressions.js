@@ -295,17 +295,22 @@ for (const bmsFirst of [false, true]) {
                 'privacy indicator keeps its warning color');
         }
     });
-    test(`search typing states stay white: BMS loaded ${order}`, () => {
+    test(`search colors match surface style: BMS loaded ${order}`, () => {
         const node = fixture();
         for (const variant of ['transparent', 'light', 'dark']) {
-            const ui = node(null, null, `overview-components-${variant}`);
-            for (const state of [null, 'hover', 'focus', 'focus hover']) {
-                const entry = node(ui, null, 'search-entry', state);
-                equal(entry.get_foreground_color().to_string(), '#ffffffff', `${variant}/${state} text`);
-                equal(entry.get_color('caret-color').to_string(), '#ffffffff', `${variant}/${state} caret`);
-                equal(entry.get_color('selected-color').to_string(), '#ffffffff', `${variant}/${state} selection`);
-                const hint = node(entry, null, 'hint-text', null, St.Label.$gtype);
-                equal(hint.get_foreground_color().to_string(), '#ffffffb3', 'placeholder remains translucent white');
+            for (const onEntry of [false, true]) {
+                const ui = node(null, null, onEntry ? null : `overview-components-${variant}`);
+                for (const state of [null, 'hover', 'focus', 'focus hover']) {
+                    const classes = onEntry ? `search-entry overview-components-${variant}` : 'search-entry';
+                    const entry = node(ui, null, classes, state);
+                    const foreground = variant === 'light' ? '#000000d9' : '#ffffffff';
+                    const hintColor = variant === 'light' ? '#000000a6' : '#ffffffb3';
+                    equal(entry.get_foreground_color().to_string(), foreground, `${variant}/${state} text`);
+                    equal(entry.get_color('caret-color').to_string(), foreground, `${variant}/${state} caret`);
+                    equal(entry.get_color('selected-color').to_string(), foreground, `${variant}/${state} selection`);
+                    const hint = node(entry, null, 'hint-text', null, St.Label.$gtype);
+                    equal(hint.get_foreground_color().to_string(), hintColor, `${variant} placeholder contrast`);
+                }
             }
         }
     });

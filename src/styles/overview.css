@@ -588,25 +588,30 @@
     background-color: transparent !important;
 }
 
-/* Preserve the personal theme's readable placeholder across upstream styles. */
+/* Preserve light placeholders only on dark/transparent search fields. */
+.search-entry.overview-components-transparent StLabel.hint-text,
+.search-entry.overview-components-dark StLabel.hint-text,
 .overview-components-transparent .search-entry StLabel.hint-text,
-.overview-components-light .search-entry StLabel.hint-text,
 .overview-components-dark .search-entry StLabel.hint-text {
     color: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* Keep typing, selection and caret colors readable in every overview style.
+/* Keep typing, selection and caret colors readable on dark/transparent fields.
  * State selectors outrank light-theme entry focus/hover rules, without changing
  * the theme's focus outline or the separate placeholder styling.
  */
+.search-entry.overview-components-transparent,
+.search-entry.overview-components-transparent:hover,
+.search-entry.overview-components-transparent:focus,
+.search-entry.overview-components-transparent:focus:hover,
+.search-entry.overview-components-dark,
+.search-entry.overview-components-dark:hover,
+.search-entry.overview-components-dark:focus,
+.search-entry.overview-components-dark:focus:hover,
 .overview-components-transparent .search-entry,
 .overview-components-transparent .search-entry:hover,
 .overview-components-transparent .search-entry:focus,
 .overview-components-transparent .search-entry:focus:hover,
-.overview-components-light .search-entry,
-.overview-components-light .search-entry:hover,
-.overview-components-light .search-entry:focus,
-.overview-components-light .search-entry:focus:hover,
 .overview-components-dark .search-entry,
 .overview-components-dark .search-entry:hover,
 .overview-components-dark .search-entry:focus,
@@ -616,3 +621,18 @@
     selected-color: white !important;
 }
 
+/* Light search surfaces need dark text, including focus/hover and caret.
+ * Support both an ancestor style class and v76's class on the entry itself.
+ */
+.search-entry.overview-components-light,
+.search-entry.overview-components-light:hover,
+.search-entry.overview-components-light:focus,
+.search-entry.overview-components-light:focus:hover,
+.overview-components-light .search-entry,
+.overview-components-light .search-entry:hover,
+.overview-components-light .search-entry:focus,
+.overview-components-light .search-entry:focus:hover {
+    color: rgba(0, 0, 0, 0.85) !important;
+    caret-color: rgba(0, 0, 0, 0.85) !important;
+    selected-color: rgba(0, 0, 0, 0.85) !important;
+}
