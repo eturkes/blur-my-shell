@@ -10,7 +10,7 @@ The stylesheet path is relative to the repository, or may be absolute. Use `make
 `src/stylesheet.css`. Use the staged, flattened
 stylesheet when checking a build. Set `GJS` to override `/usr/bin/gjs`.
 
-The 29 checks execute production component methods with mocked scheduling and
+The 31 checks execute production component methods with mocked scheduling and
 rendering allocation, and query the real `St.ThemeNode` CSS cascade. They cover
 deferred Dash to Panel startup/teardown, activation notifications for both
 upstream and personal Dash to Panel UUIDs, opaque native popup suppression during
@@ -75,3 +75,11 @@ v76's light search backgrounds. The corrected checks require dark text/caret/
 selection and a dark placeholder in light mode; dark and transparent modes retain
 light colors. Both ancestor and entry-local style classes are checked across
 normal, hover, focus, and combined states in both stylesheet load orders.
+
+## Softer light controls and search-result focus
+
+Search result focus-ring checks use Luminus-like important inset shadows in both
+load orders, including focus/hover and focus/active combinations. Background
+focus highlights must remain visible, and entry/app-grid focus rings must stay
+intact. All 31 checks pass. The user rebooted into `76-personal.3` and reported
+that the desktop appearance looks good on 2026-10-21.

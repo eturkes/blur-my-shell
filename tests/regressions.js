@@ -295,6 +295,26 @@ for (const bmsFirst of [false, true]) {
                 'privacy indicator keeps its warning color');
         }
     });
+    test(`search result focus rings stay local: BMS loaded ${order}`, () => {
+        const node = fixture();
+        for (const variant of ['transparent', 'light', 'dark']) {
+            const ui = node(null, null, `overview-components-${variant}`);
+            const results = node(ui, 'searchResults', null);
+            for (const state of ['focus', 'focus hover', 'focus active']) {
+                for (const kind of ['overview-tile', 'grid-search-result', 'list-search-result', 'search-provider-icon']) {
+                    const result = node(results, null, kind, state);
+                    equal(result.get_box_shadow(), null, `${variant}/${kind}/${state} has no ring`);
+                    if (result.get_background_color().alpha === 0)
+                        throw new Error(`${variant}/${kind}/${state} lost its focus highlight`);
+                }
+            }
+            const appGrid = node(ui, 'appDisplay', null);
+            if (!node(appGrid, null, 'overview-tile', 'focus').get_box_shadow())
+                throw new Error('app grid focus ring must remain unchanged');
+            if (!node(ui, null, 'search-entry', 'focus').get_box_shadow())
+                throw new Error('search entry focus ring must remain unchanged');
+        }
+    });
     test(`search colors match surface style: BMS loaded ${order}`, () => {
         const node = fixture();
         for (const variant of ['transparent', 'light', 'dark']) {

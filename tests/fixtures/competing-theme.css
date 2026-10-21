@@ -15,3 +15,15 @@
 .search-entry:focus:hover { color: #222226; caret-color: #222226; }
 .search-entry:focus { box-shadow: inset 0 0 0 2px rgba(53, 132, 228, 0.8) !important; }
 .search-entry StLabel.hint-text { color: rgba(255, 255, 255, 0.7); }
+
+/* Luminus keyboard-focus rings, including combined interaction states. */
+.overview-tile:focus,
+.grid-search-result:focus,
+.list-search-result:focus,
+.search-provider-icon:focus,
+.overview-tile:focus:hover,
+.grid-search-result:focus:hover,
+.list-search-result:focus:hover,
+.search-provider-icon:focus:hover {
+    box-shadow: inset 0 0 0 2px rgba(53, 132, 228, 0.8) !important;
+}
