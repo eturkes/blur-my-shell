@@ -167,14 +167,14 @@
 .search-entry.overview-components-light:focus,
 .overview-components-light .search-entry:focus {
     color: rgba(0, 0, 0, 0.85) !important;
-    background-color: rgba(255, 255, 255, 0.42) !important;
+    background-color: rgba(255, 255, 255, 0.58) !important;
     box-shadow: none;
 }
 
 .search-entry.overview-components-light:focus,
 .overview-components-light .search-entry:focus {
     border-color: transparent;
-    background-color: rgba(255, 255, 255, 0.60) !important;
+    background-color: rgba(255, 255, 255, 0.78) !important;
     box-shadow: inset 0 0 0 2px rgba(53, 132, 228, 0.8) !important;
     box-shadow: inset 0 0 0 2px st-transparentize(-st-accent-color, 0.2) !important;
 }
@@ -207,11 +207,6 @@
 .overview-components-light .page-navigation-arrow {
     background-color: rgba(255, 255, 255, 0.58) !important;
     border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-/* Match the softer search field without changing search result cards. */
-.overview-components-light .page-navigation-arrow {
-    background-color: rgba(255, 255, 255, 0.42) !important;
 }
 
 .overview-components-light .search-statusbox,
@@ -283,7 +278,7 @@
 
 .overview-components-light .page-navigation-arrow:hover,
 .overview-components-light .page-navigation-arrow:focus {
-    background-color: rgba(255, 255, 255, 0.60) !important;
+    background-color: rgba(255, 255, 255, 0.78) !important;
 }
 
 /* Highlighted / selected search results */
@@ -323,7 +318,7 @@
 
 .overview-components-light .page-navigation-arrow:active,
 .overview-components-light .page-navigation-arrow:focus:hover {
-    background-color: rgba(255, 255, 255, 0.72) !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .overview-components-light #appDisplay .overview-tile:focus:active,

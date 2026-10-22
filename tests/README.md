@@ -76,10 +76,11 @@ selection and a dark placeholder in light mode; dark and transparent modes retai
 light colors. Both ancestor and entry-local style classes are checked across
 normal, hover, focus, and combined states in both stylesheet load orders.
 
-## Softer light controls and search-result focus
+## Default Light styling and search-result focus
 
 Search result focus-ring checks use Luminus-like important inset shadows in both
 load orders, including focus/hover and focus/active combinations. Background
-focus highlights must remain visible, and entry/app-grid focus rings must stay
-intact. All 31 checks pass. The user rebooted into `76-personal.3` and reported
-that the desktop appearance looks good on 2026-10-21.
+focus highlights must remain visible, while search-result focus rings remain
+removed and entry/app-grid focus rings stay intact. `76-personal.4` restores the
+default Light backgrounds while retaining `76-personal.3`'s search-result ring
+suppression. The style-specific text contrast checks remain unchanged.

@@ -12,7 +12,13 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 - Settings schema/path and gettext domain stay upstream-compatible, so the
   existing preferences and translations are reused.
 
-`76-personal.3` softens the light Overview search field and app-grid page arrows
+`76-personal.4` restores the default Light Overview search-field and app-grid
+page-arrow backgrounds. Search-result focus rings remain removed as requested;
+their background focus highlights and entry/dash/app-grid focus rings stay intact.
+The dark text, caret, selection, and placeholder fix on light search surfaces
+remains. Apart from search-result ring suppression, keep the default Light styling.
+
+`76-personal.3` (superseded) softens the light Overview search field and app-grid page arrows
 to 42% white (60% on focus/hover; arrows use 72% when pressed). Search result
 cards are unchanged. Keyboard-focused search results retain their background
 highlight but no longer show Luminus's blue inset ring; the entry, dash and
