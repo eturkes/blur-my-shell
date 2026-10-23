@@ -10,14 +10,30 @@ The stylesheet path is relative to the repository, or may be absolute. Use `make
 `src/stylesheet.css`. Use the staged, flattened
 stylesheet when checking a build. Set `GJS` to override `/usr/bin/gjs`.
 
-The 31 checks execute production component methods with mocked scheduling and
+The 35 checks execute production component methods with mocked scheduling and
 rendering allocation, and query the real `St.ThemeNode` CSS cascade. They cover
 deferred Dash to Panel startup/teardown, activation notifications for both
-upstream and personal Dash to Panel UUIDs, opaque native popup suppression during
+upstream and personal Dash to Panel UUIDs, silent panel rebasing/remapping,
+opaque native popup suppression during
 fades, retained translucent/explicit popup styling, and both stylesheet load
 orders, including overview panel states and focused/hovered search text,
 selection and caret colors. No running Shell, GUI interaction, settings mutation, Node.js, or Python
 is required. They do not replace compositor pixel/rendering checks.
+
+## Headless panel rebase
+
+With GNOME 50, personal Dash to Panel, and Luminus installed, run:
+
+```sh
+make build
+bash tests/panel-rebase.sh
+```
+
+The runner uses a private bus, settings, runtime directory, and headless compositor.
+It does not change the running desktop. It rebases real Dash to Panel and Luminus
+while Blur my Shell remains enabled. It checks panel rediscovery, emitter
+replacement, and white clock/tray foregrounds before and after rebasing.
+Arguments override the staged BMS, DTP, and Luminus directories, in that order.
 
 ## Original failure evidence
 

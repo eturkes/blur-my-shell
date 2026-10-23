@@ -48,6 +48,12 @@ class Connections {
         });
         return Array.isArray(signals) ? ids : ids[0];
     }
+    emit(object, signal, ...args) {
+        for (const record of [...(this.records.get(object) ?? [])]) {
+            if (record.signal === signal)
+                record.handler(object, ...args);
+        }
+    }
     disconnect_all_for(object) { this.records.delete(object); }
     disconnect_all() { this.records.clear(); }
     get size() { return [...this.records.values()].reduce((sum, ids) => sum + ids.length, 0); }
@@ -62,7 +68,10 @@ function panelFixture(light, count) {
         overview: {visible: false},
     };
     const panels = Array.from({length: count}, (_, i) => i === 0 ? Main.panel : new Actor());
-    for (const panel of panels) panel.get_stage = () => true;
+    for (const panel of panels) {
+        panel.get_stage = () => true;
+        panel.mapped = true;
+    }
     const global = {
         dashToPanel: {panels: panels.map(panel => ({panel}))},
         display: {}, window_group: {}, window_manager: {},
@@ -96,7 +105,7 @@ function panelFixture(light, count) {
         });
         component.update_visibility();
     };
-    return {component, connections, Main, global, drain() {
+    return {component, connections, Main, global, pending: () => idles.size, drain() {
         let remaining = 20;
         while (idles.size) {
             assert(--remaining > 0, 'panel scheduled an endless idle loop');
@@ -166,6 +175,98 @@ for (const [uuid, state, accepted] of [
         component.disable();
     });
 }
+
+test('silent DTP rebase: detached wrapper remap restores every panel', () => {
+    const fixture = panelFixture(true, 1);
+    const {component, connections, Main, global} = fixture;
+    component.enable();
+    fixture.drain();
+    const previousDtp = global.dashToPanel;
+
+    // DTP reparents Main.panel before rooting its new wrapper. Shell's temporary
+    // extension rebase replaces the DTP emitter without an activation signal.
+    const wrapper = new Actor();
+    let wrapperOnStage = false;
+    wrapper.get_stage = () => wrapperOnStage;
+    Main.panel.get_parent = () => wrapper;
+    Main.panel.get_stage = () => wrapper.get_stage();
+    Main.panel.mapped = false;
+    connections.emit(Main.panel, 'parent-set');
+    equal(component.actors_list.length, 0, 'detached panel must release the old blur');
+    equal(Main.uiGroup.has_style_class_name('panel-light-text'), false, 'old style is removed');
+
+    const secondaryPanels = [new Actor(), new Actor()];
+    for (const panel of secondaryPanels) panel.get_stage = () => true;
+    global.dashToPanel = {panels: [Main.panel, ...secondaryPanels].map(panel => ({panel}))};
+    wrapperOnStage = true;
+    Main.panel.mapped = true;
+    connections.emit(Main.panel, 'notify::mapped');
+    fixture.drain();
+
+    equal(Main.panel.get_parent(), wrapper, 'rooting must not require another parent-set');
+    equal(component.actors_list.length, 3, 'remap must discover all replacement panels');
+    equal(Main.uiGroup.has_style_class_name('panel-light-text'), true, 'remap must restore light text');
+    equal(connections.records.has(previousDtp), false, 'old DTP emitter must disconnect');
+    equal(component.discovery.dash_to_panel, global.dashToPanel, 'discovery must track the new emitter');
+    component.disable();
+});
+
+test('silent DTP rebase: unmap leaves discovery unchanged', () => {
+    const fixture = panelFixture(true, 1);
+    const {component, connections, Main, global} = fixture;
+    component.enable();
+    fixture.drain();
+    const previousDtp = global.dashToPanel;
+    global.dashToPanel = {panels: []};
+    Main.panel.mapped = false;
+    connections.emit(Main.panel, 'notify::mapped');
+    equal(component.discovery.dash_to_panel, previousDtp, 'unmap must not reconcile a detached tree');
+    equal(connections.records.has(global.dashToPanel), false, 'unmap must not connect a new emitter');
+    equal(fixture.pending(), 0, 'unmap must not schedule discovery');
+    component.disable();
+});
+
+test('silent DTP rebase: remaps coalesce and reconnect panel notifications', () => {
+    const fixture = panelFixture(true, 1);
+    const {component, connections, Main, global} = fixture;
+    component.enable();
+    fixture.drain();
+    global.dashToPanel = {panels: [{panel: Main.panel}]};
+    connections.emit(Main.panel, 'notify::mapped');
+    connections.emit(Main.panel, 'notify::mapped');
+    equal(fixture.pending(), 1, 'repeated maps must share a pending discovery');
+    equal((connections.records.get(global.dashToPanel) ?? [])
+        .filter(record => record.signal === 'panels-created').length, 1,
+    'replacement emitter must have one listener');
+    fixture.drain();
+    equal(component.actors_list.length, 1, 'remap must not duplicate existing panels');
+
+    const secondary = new Actor();
+    secondary.get_stage = () => true;
+    global.dashToPanel.panels.push({panel: secondary});
+    connections.emit(global.dashToPanel, 'panels-created');
+    fixture.drain();
+    equal(component.actors_list.length, 2, 'replacement emitter must discover later panels');
+    component.disable();
+});
+
+test('silent DTP rebase: teardown cancels remap discovery and signals', () => {
+    const fixture = panelFixture(true, 1);
+    const {component, connections, Main, global} = fixture;
+    component.enable();
+    fixture.drain();
+    global.dashToPanel = {panels: [{panel: Main.panel}]};
+    connections.emit(Main.panel, 'notify::mapped');
+    equal(fixture.pending(), 1, 'remap must queue replacement discovery');
+    component.disable();
+    equal(fixture.pending(), 0, 'disable must cancel pending remap discovery');
+    connections.emit(Main.panel, 'notify::mapped');
+    connections.emit(global.dashToPanel, 'panels-created');
+    fixture.drain();
+    equal(component.actors_list.length, 0, 'disabled component must not recreate panels');
+    equal(connections.size, 0, 'disable must disconnect remap and emitter signals');
+    equal(Main.uiGroup.has_style_class_name('panel-light-text'), false, 'disable must retain native text styling');
+});
 
 const PopupBlurSurface = loadClass('src/components/popup/surface/blur_surface.js', 'PopupBlurSurface', {
     St, has_any_style_class: (actor, classes) => classes.some(c => actor.classes.has(c)),

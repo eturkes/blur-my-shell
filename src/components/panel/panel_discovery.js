@@ -25,6 +25,15 @@ export class PanelDiscovery {
         this.connections.connect(Main.panel, 'destroy', () => {
             this.main_panel = null;
         });
+        this.connections.connect(Main.panel, 'notify::mapped', panel => {
+            if (!panel.mapped)
+                return;
+
+            // Shell rebases DTP without a state signal; its detached replacement
+            // wrapper maps after parent-set, with a new panels-created emitter.
+            this.connect_to_dash_to_panel();
+            this.blur_existing_panels();
+        });
 
         this.connections.connect(
             Main.extensionManager,
