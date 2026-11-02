@@ -17,10 +17,14 @@ old renderer apart from its changing frame label and clock. The actual desktop,
 Chromium/Electron windows, shadows, subsurfaces and other scale factors still
 need fresh-session testing before this build is marked accepted.
 
-Installed `77-personal.2` on 2026-11-02 with the extension active but
-application blur still disabled. The old JavaScript remains cached in this
-session; do not turn application blur back on until a fresh login has loaded
-the new code. The previous `77-personal.1` installed tree is archived in
+Installed `77-personal.2` on 2026-11-02, then rebooted and confirmed the new
+version loaded. Static application blur was re-enabled with BrowserOS and
+Spotify running. During a 61-second observation, Shell GPU allocation peaked
+at 1.71 GiB, system memory pressure remained at zero, and the user reported
+that everything seemed fine. No mask or compositor errors appeared in the
+checked journal. This is an initial real-workload check, not comprehensive
+coverage of corners, subsurfaces or additional display scales. The previous
+`77-personal.1` installed tree is archived in
 `~/.cache/blur-my-shell-backups/77-personal.1-installed.tar`.
 
 The installed `76-personal.5` build caused severe graphics-memory churn in the
@@ -59,12 +63,12 @@ window, so it was discarded and never installed. The regression probe
 see `tests/README.md`. The corrected implementation now passes this test, but
 still requires the real-desktop checks described above.
 
-Current workaround: the extension is enabled, application blur is disabled,
-and the original static-blur preference is retained. This changes the user's
-application-blur appearance but keeps other effects. The previous archive and
-pre-update dconf dump are in `~/.cache/blur-my-shell-backups/`. Do not mark the
-update as checked, merge to master, or remove the rollback until a real
-static-blur fix passes real-workload, visual, and audio checks.
+The earlier workaround disabled application blur while leaving other effects
+active. After the fresh-session observation above, static application blur is
+enabled again. The previous archive and pre-update dconf dump remain in
+`~/.cache/blur-my-shell-backups/`. Do not mark the update fully checked, merge
+to master, or remove the rollback until the remaining desktop visual and scale
+checks are complete.
 
 The first merged build passed 29/35 native checks, with six personal overview
 contrast/highlight failures. Preserving the personal cascade behavior restored
