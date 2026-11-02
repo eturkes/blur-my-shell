@@ -6,29 +6,37 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 ## 2026-11-02 graphics investigation and upstream update
 
 The installed `76-personal.5` build caused severe graphics-memory churn in the
-existing GNOME 50.5 session: its GNOME Shell GPU client cycled between roughly
-0.5 GiB and 12 GiB, and had earlier reached roughly 25.8 GiB. Disabling this
-extension stopped the cycling; re-enabling it reproduced the rise within
-seconds. Disabling application, panel, or popup blur individually did not stop
-the churn. The extension is left disabled for the running session.
+GNOME 50.5 session: the Shell GPU client cycled between roughly 0.5 and 12 GiB,
+and had earlier reached roughly 25.8 GiB. Disabling the extension stopped the
+cycling; re-enabling it reproduced the rise within seconds. Initial individual
+component tests were invalid: PATH resolved `gsettings` to Homebrew's binary,
+which did not use the running desktop's dconf backend. Use `/usr/bin/gsettings`
+with `--schemadir` for live tests.
 
 The `update/upstream-20261102` branch integrates upstream master at `2930ef1`
-(including v77). Upstream commit `6c7cd51` reuses blur textures across animations
-and reduces GJS/integrated-GPU allocation churn; `17e81ef` reduces paint-time
-allocations. These are plausible remedies, not proof that this specific workload
-is fixed. Keep the previous archive in `~/.cache/blur-my-shell-backups/` and
-perform the fresh-login GPU-memory, responsiveness, audio, and visual checks
-below before accepting or enabling the updated build for routine use. GNOME
-Shell does not reliably reload changed extension modules by toggling them.
+(including v77 and texture-reuse commit `6c7cd51`). The `77-personal.1`
+archive was installed after reboot while the extension was unimported; enabling
+it loaded the new code. The manager retains cached `76-personal.5` metadata
+until the next session. A mostly idle baseline was stable, but after BrowserOS
+and Spotify started the new build also drove Shell GPU memory to about 19 GiB.
+The upstream update alone therefore does not fix this workload.
 
-After reboot on 2026-11-02, the `77-personal.1` archive was installed while
-the extension was still disabled and had not been imported in the new session.
-Enabling it loaded the installed code; the GNOME extension manager retains the
-old `76-personal.5` metadata until the next session. A 75-second mostly idle
-baseline showed Shell GPU memory near 300 MiB and no memory-pressure stalls.
-This is not a workload reproduction: BrowserOS and Spotify were not running.
-Keep the update branch and rollback archive until the original workload and
-visual/audio checks have been verified.
+With system gsettings and both applications running, disabling application
+blur kept the extension active and Shell GPU memory flat around 0.38 GiB for
+20 seconds. Re-enabling application blur increased it from 0.73 to 3.05 GiB
+in one second; turning it off stopped the growth. Switching application blur
+from the user's static mode to dynamic mode and temporarily enabling it kept
+the allocation under 0.7 GiB for 20 seconds. This implicates the static
+application-blur path, but does not by itself prove which code in that path
+is responsible. `src/effects/window_mask.js` captures two fresh window textures
+on each damage event and is a specific investigation lead.
+
+Current workaround: the extension is enabled, application blur is disabled,
+and the original static-blur preference is retained. This changes the user's
+application-blur appearance but keeps other effects. The previous archive and
+pre-update dconf dump are in `~/.cache/blur-my-shell-backups/`. Do not mark the
+update as checked, merge to master, or remove the rollback until a real
+static-blur fix passes workload, visual, and audio checks.
 
 The first merged build passed 29/35 native checks, with six personal overview
 contrast/highlight failures. Preserving the personal cascade behavior restored
