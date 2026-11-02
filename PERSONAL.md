@@ -17,6 +17,12 @@ old renderer apart from its changing frame label and clock. The actual desktop,
 Chromium/Electron windows, shadows, subsurfaces and other scale factors still
 need fresh-session testing before this build is marked accepted.
 
+Installed `77-personal.2` on 2026-11-02 with the extension active but
+application blur still disabled. The old JavaScript remains cached in this
+session; do not turn application blur back on until a fresh login has loaded
+the new code. The previous `77-personal.1` installed tree is archived in
+`~/.cache/blur-my-shell-backups/77-personal.1-installed.tar`.
+
 The installed `76-personal.5` build caused severe graphics-memory churn in the
 GNOME 50.5 session: the Shell GPU client cycled between roughly 0.5 and 12 GiB,
 and had earlier reached roughly 25.8 GiB. Disabling the extension stopped the
