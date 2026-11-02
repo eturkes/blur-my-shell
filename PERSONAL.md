@@ -21,6 +21,15 @@ perform the fresh-login GPU-memory, responsiveness, audio, and visual checks
 below before accepting or enabling the updated build for routine use. GNOME
 Shell does not reliably reload changed extension modules by toggling them.
 
+After reboot on 2026-11-02, the `77-personal.1` archive was installed while
+the extension was still disabled and had not been imported in the new session.
+Enabling it loaded the installed code; the GNOME extension manager retains the
+old `76-personal.5` metadata until the next session. A 75-second mostly idle
+baseline showed Shell GPU memory near 300 MiB and no memory-pressure stalls.
+This is not a workload reproduction: BrowserOS and Spotify were not running.
+Keep the update branch and rollback archive until the original workload and
+visual/audio checks have been verified.
+
 The first merged build passed 29/35 native checks, with six personal overview
 contrast/highlight failures. Preserving the personal cascade behavior restored
 35/35 without weakening the checks. The private headless DTP/Luminus panel
