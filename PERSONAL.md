@@ -31,6 +31,15 @@ application-blur path, but does not by itself prove which code in that path
 is responsible. `src/effects/window_mask.js` captures two fresh window textures
 on each damage event and is a specific investigation lead.
 
+A private headless compositor with a synthetic animated GTK window reproduced
+the mechanism: 180 damage events caused 180 mask captures and 360 distinct
+textures in three seconds. Mutter `MetaWindowActor.paint_to_content()` allocates
+a new texture per call. An experimental in-paint reusable framebuffer reduced
+allocations to two but visibly painted a covered window through the focused
+window, so it was discarded and never installed. The known-red regression probe
+`tests/window-mask-churn.sh` checks both texture reuse and window occlusion;
+see `tests/README.md`. The remaining task is a safe, visually correct fix.
+
 Current workaround: the extension is enabled, application blur is disabled,
 and the original static-blur preference is retained. This changes the user's
 application-blur appearance but keeps other effects. The previous archive and
