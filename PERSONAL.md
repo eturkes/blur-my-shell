@@ -5,6 +5,18 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 
 ## 2026-11-02 graphics investigation and upstream update
 
+`77-personal.2` fixes the reproduced texture churn by painting into two reusable,
+padded window-mask framebuffers, restoring their matrices after each capture and
+reallocating only when capacity must change substantially. In the private GPU
+compositor, the existing implementation created 360 distinct textures in 180
+captures and 24 across 12 resize steps; the candidate used two in each case.
+The regression also checks hidden-window occlusion, growth, mask geometry,
+focus-driven hide/show and cleanup. All 35 native checks and the private DTP
+rebase check pass. A visual comparison of the synthetic GTK case matches the
+old renderer apart from its changing frame label and clock. The actual desktop,
+Chromium/Electron windows, shadows, subsurfaces and other scale factors still
+need fresh-session testing before this build is marked accepted.
+
 The installed `76-personal.5` build caused severe graphics-memory churn in the
 GNOME 50.5 session: the Shell GPU client cycled between roughly 0.5 and 12 GiB,
 and had earlier reached roughly 25.8 GiB. Disabling the extension stopped the
@@ -27,25 +39,26 @@ blur kept the extension active and Shell GPU memory flat around 0.38 GiB for
 in one second; turning it off stopped the growth. Switching application blur
 from the user's static mode to dynamic mode and temporarily enabling it kept
 the allocation under 0.7 GiB for 20 seconds. This implicates the static
-application-blur path, but does not by itself prove which code in that path
-is responsible. `src/effects/window_mask.js` captures two fresh window textures
-on each damage event and is a specific investigation lead.
+application-blur path. A subsequent private-compositor test identified
+`src/effects/window_mask.js`: it captured two fresh window textures on each
+damage event.
 
 A private headless compositor with a synthetic animated GTK window reproduced
 the mechanism: 180 damage events caused 180 mask captures and 360 distinct
 textures in three seconds. Mutter `MetaWindowActor.paint_to_content()` allocates
 a new texture per call. An experimental in-paint reusable framebuffer reduced
 allocations to two but visibly painted a covered window through the focused
-window, so it was discarded and never installed. The known-red regression probe
+window, so it was discarded and never installed. The regression probe
 `tests/window-mask-churn.sh` checks both texture reuse and window occlusion;
-see `tests/README.md`. The remaining task is a safe, visually correct fix.
+see `tests/README.md`. The corrected implementation now passes this test, but
+still requires the real-desktop checks described above.
 
 Current workaround: the extension is enabled, application blur is disabled,
 and the original static-blur preference is retained. This changes the user's
 application-blur appearance but keeps other effects. The previous archive and
 pre-update dconf dump are in `~/.cache/blur-my-shell-backups/`. Do not mark the
 update as checked, merge to master, or remove the rollback until a real
-static-blur fix passes workload, visual, and audio checks.
+static-blur fix passes real-workload, visual, and audio checks.
 
 The first merged build passed 29/35 native checks, with six personal overview
 contrast/highlight failures. Preserving the personal cascade behavior restored

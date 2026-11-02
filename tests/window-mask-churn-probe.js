@@ -73,7 +73,11 @@ export default class MaskChurnProbe extends Extension {
                     resolve();
                 } catch (error) { reject(error); }
             }));
-        const input = Gio.MemoryInputStream.new_from_bytes(output.steal_as_bytes());
+        const screenshotBytes = output.steal_as_bytes();
+        const screenshotPath = GLib.getenv('BMS_MASK_TEST_SCREENSHOT');
+        if (screenshotPath)
+            GLib.file_set_contents(screenshotPath, screenshotBytes.get_data());
+        const input = Gio.MemoryInputStream.new_from_bytes(screenshotBytes);
         const image = GdkPixbuf.Pixbuf.new_from_stream(input, null);
         const data = image.get_pixels();
         const channels = image.get_n_channels();
@@ -81,18 +85,66 @@ export default class MaskChurnProbe extends Extension {
         const pixel = (x, y) => [...data.slice(y * stride + x * channels, y * stride + x * channels + 3)];
         const inside = pixel(550, 380), outside = pixel(500, 380);
         const visualDelta = Math.max(...inside.map((value, i) => Math.abs(value - outside[i])));
+        const focused = global.display.focus_window?.get_title();
+        // Match the user's dynamic-opacity behavior: focused windows have no
+        // blur, and regain a correctly updated mask after focus moves away.
+        const appSettings = global.blur_my_shell._settings.applications;
+        appSettings.DYNAMIC_OPACITY = true;
+        await delay(400);
+        const focusHidesBlur = !mask.blurActor.visible;
+        const other = [...global.blur_my_shell._applications_blur.meta_windows]
+            .find(w => w.get_title() === 'Mask churn foreground');
+        if (!other)
+            throw new Error('Foreground test window disappeared');
+        other.activate(global.get_current_time());
+        await delay(600);
+        const unfocusedShowsBlur = mask.blurActor.visible && !!mask.snapshot;
+        appSettings.DYNAMIC_OPACITY = false;
+        mask.metaWindow.activate(global.get_current_time());
+        await delay(400);
+        const frame = mask.metaWindow.get_frame_rect();
+        const beforeSize = actor.get_size();
+        const resizeTextures = new Set();
+        const observedSizes = new Set();
+        for (let i = 0; i < 12; i++) {
+            mask.metaWindow.move_resize_frame(true, frame.x + 30, frame.y + 20, 800 + i * 4, 500 + i * 3);
+            await delay(80);
+            observedSizes.add(actor.get_size().join('x'));
+            if (mask.snapshot) {
+                resizeTextures.add(System.addressOfGObject(mask.snapshot.texture));
+                resizeTextures.add(System.addressOfGObject(mask.snapshot.foregroundTexture));
+            }
+        }
+        await delay(400);
+        const afterSize = actor.get_size();
+        const snapshotSize = mask.snapshot ? [mask.snapshot.width, mask.snapshot.height] : null;
+        const resized = beforeSize.some((value, i) => value !== afterSize[i]);
+        const sizeMatches = snapshotSize?.every((value, i) => value === Math.ceil(afterSize[i])) ?? false;
+        mask.metaWindow.move_resize_frame(true, 0, 30, 1270, 700);
+        await delay(1200);
+        const grownSize = actor.get_size();
+        const grownSnapshot = mask.snapshot ? [mask.snapshot.width, mask.snapshot.height] : null;
+        const grown = grownSize[0] > beforeSize[0];
+        const grownMatches = grownSnapshot?.every((value, i) => value === Math.ceil(grownSize[i])) ?? false;
+        this.testMask = mask;
+        this.testWindow = mask.metaWindow;
         await this.finish({captures, damages, uniqueTextures: textures.size,
             blurVisible: mask.blurActor?.visible, actorVisible: actor.visible,
-            focused: global.display.focus_window?.get_title(), inside, outside, visualDelta});
+            focused, inside, outside, visualDelta, resized, sizeMatches, beforeSize, afterSize, snapshotSize,
+            resizeSteps: observedSizes.size, resizeTextures: resizeTextures.size, grown, grownMatches, grownSize,
+            focusHidesBlur, unfocusedShowsBlur});
     }
 
     async finish(result) {
-        GLib.file_set_contents(GLib.getenv('BMS_MASK_TEST_RESULT'), JSON.stringify(result));
         try {
             await Main.extensionManager._callExtensionDisableWithRebase('blur-my-shell@eturkes.com');
+            if (this.testMask)
+                result.cleaned = this.testMask.destroyed && !this.testWindow._bms_window_alpha_mask
+                    && this.testMask.targets == null && this.testMask.snapshot == null;
         } catch (error) {
-            console.error(`Mask test cleanup: ${error.message}`);
+            result.error = `Mask test cleanup: ${error.message}`;
         }
+        GLib.file_set_contents(GLib.getenv('BMS_MASK_TEST_RESULT'), JSON.stringify(result));
         if (this.client)
             this.client.force_exit();
         await delay(500);

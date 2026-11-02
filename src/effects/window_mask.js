@@ -3,7 +3,6 @@
 // This module changes no settings and never replaces the client's texture/mask.
 import Clutter from 'gi://Clutter';
 import Cogl from 'gi://Cogl';
-import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Graphene from 'gi://Graphene';
 
@@ -97,12 +96,16 @@ const WindowAlphaMaskEffect = GObject.registerClass({
 
     vfunc_paint_target(paintNode, paintContext) {
         const owner = this.owner;
-        const snapshot = owner?.snapshot;
         const actor = this.get_actor();
-        // Fail closed: a missing/stale mask must not reveal a solid rectangle.
-        if (!owner || owner.destroyed || owner.capturing || !snapshot || !actor)
+        if (!owner || owner.destroyed || owner.capturing || !actor)
             return;
         try {
+            if (owner.dirty)
+                owner.capture(paintContext);
+            const snapshot = owner.snapshot;
+            // Fail closed: a missing mask must not reveal a solid rectangle.
+            if (!snapshot)
+                return;
             const [valid, targetWidth, targetHeight] = this.get_target_size();
             const origin = offscreenOrigin(actor);
             if (!valid || !origin)
@@ -116,8 +119,8 @@ const WindowAlphaMaskEffect = GObject.registerClass({
                 // The snapshot includes the window actor's transform at capture.
                 const parentX = snapshot.p0.x + local.x * snapshot.px.x + local.y * snapshot.py.x;
                 const parentY = snapshot.p0.y + local.x * snapshot.px.y + local.y * snapshot.py.y;
-                return [(parentX - snapshot.x) / snapshot.width,
-                    (parentY - snapshot.y) / snapshot.height];
+                return [(parentX - snapshot.x) / snapshot.textureWidth,
+                    (parentY - snapshot.y) / snapshot.textureHeight];
             };
             const p0 = map(...origin);
             const px = map(origin[0] + targetWidth / scale, origin[1]);
@@ -135,6 +138,7 @@ const WindowAlphaMaskEffect = GObject.registerClass({
             pipeline.set_uniform_1f(this._locations.normalizer, snapshot.normalizer);
             super.vfunc_paint_target(paintNode, paintContext);
         } catch (error) {
+            owner.snapshot = null;
             owner.warn('paint', error);
         }
     }
@@ -161,8 +165,8 @@ export function attachWindowMask(metaWindow) {
 
     const owner = {
         metaWindow, windowActor,
-        destroyed: false, capturing: false, snapshot: null,
-        blurActor: null, originalZ: null, cullingInhibited: false, effect: null, idleId: 0,
+        destroyed: false, capturing: false, snapshot: null, dirty: true, targets: null,
+        blurActor: null, originalZ: null, cullingInhibited: false, effect: null,
         connections: [], diagnostics: new Set(),
 
         warn(stage, error) {
@@ -231,9 +235,10 @@ export function attachWindowMask(metaWindow) {
             }
         },
 
-        capture() {
+        capture(paintContext) {
             if (this.destroyed || this.capturing)
                 return;
+            this.dirty = false;
             this.ensureEffect();
             if (!this.blurActor || !this.blurActor.visible || !this.windowActor.visible)
                 return;
@@ -251,9 +256,63 @@ export function attachWindowMask(metaWindow) {
             const px = actor.apply_relative_transform_to_point(parent, point(width, 0));
             const py = actor.apply_relative_transform_to_point(parent, point(0, height));
             const restored = [];
+            const scale = actor.get_resource_scale();
+            const pixelWidth = Math.floor(Math.ceil(width) * scale);
+            const pixelHeight = Math.floor(Math.ceil(height) * scale);
+            if (!(pixelWidth > 0 && pixelHeight > 0)) {
+                this.snapshot = null;
+                return;
+            }
+            // paint_to_content() allocates a new texture on every call. Retain
+            // two padded targets per window so damage and small resize steps
+            // do not continually allocate new GPU memory. Shrink only after a
+            // large size reduction, leaving headroom against resize oscillation.
+            const paddedWidth = Math.ceil(pixelWidth / 256) * 256;
+            const paddedHeight = Math.ceil(pixelHeight / 256) * 256;
+            const grow = !this.targets || pixelWidth > this.targets.width || pixelHeight > this.targets.height;
+            const shrink = this.targets && (
+                (pixelWidth <= this.targets.width / 4 && paddedWidth < this.targets.width)
+                || (pixelHeight <= this.targets.height / 4 && paddedHeight < this.targets.height)
+            );
+            if (grow || shrink) {
+                const context = paintContext.get_framebuffer().get_context();
+                const create = () => {
+                    const texture = Cogl.Texture2D.new_with_size(context, paddedWidth, paddedHeight);
+                    texture.set_auto_mipmap(false);
+                    const framebuffer = Cogl.Offscreen.new_with_texture(texture);
+                    framebuffer.allocate();
+                    return {texture, framebuffer};
+                };
+                this.targets = {
+                    width: paddedWidth, height: paddedHeight,
+                    foreground: create(), mask: create(),
+                };
+            }
+            const paint = target => {
+                const framebuffer = target.framebuffer;
+                framebuffer.clear4f(Cogl.BufferBit.COLOR, 0, 0, 0, 0);
+                framebuffer.orthographic(0, 0, this.targets.width / scale, this.targets.height / scale, 0, 1);
+                // Reusing a framebuffer also reuses its modelview matrix.
+                // Restore it after each paint so the translation cannot accumulate.
+                framebuffer.push_matrix();
+                try {
+                    framebuffer.translate(-Math.floor(x), -Math.floor(y), 0);
+                    paintContext.push_framebuffer(framebuffer);
+                    try {
+                        actor.inhibit_culling();
+                        try {
+                            actor.paint(paintContext);
+                        } finally {
+                            actor.uninhibit_culling();
+                        }
+                    } finally {
+                        paintContext.pop_framebuffer();
+                    }
+                } finally {
+                    framebuffer.pop_matrix();
+                }
+            };
             this.capturing = true;
-            let content = null;
-            let foregroundContent = null;
             try {
                 const foreground = [];
                 for (const child of actor.get_children()) {
@@ -268,13 +327,13 @@ export function attachWindowMask(metaWindow) {
                 }
                 // Capture the actual foreground first: shell-owned shadows
                 // are not necessarily affected by BMS's child opacity setting.
-                foregroundContent = actor.paint_to_content(null);
+                paint(this.targets.foreground);
                 for (const child of foreground) {
                     const childOpacity = child.opacity;
                     restored.push(() => child.opacity = childOpacity);
                     child.opacity = 255;
                 }
-                content = actor.paint_to_content(null);
+                paint(this.targets.mask);
             } finally {
                 for (const restore of restored.reverse()) {
                     try {
@@ -285,16 +344,18 @@ export function attachWindowMask(metaWindow) {
                 }
                 this.capturing = false;
             }
-            const texture = content?.get_texture();
-            const foregroundTexture = foregroundContent?.get_texture();
+            const texture = this.targets.mask.texture;
+            const foregroundTexture = this.targets.foreground.texture;
             if (!texture || !foregroundTexture) {
                 this.snapshot = null;
-                throw new Error('paint_to_content returned no texture');
+                throw new Error('window mask framebuffer has no texture');
             }
             this.snapshot = {
-                content, texture, foregroundContent, foregroundTexture,
+                texture, foregroundTexture,
                 x: Math.floor(x), y: Math.floor(y),
                 width: Math.ceil(width), height: Math.ceil(height),
+                textureWidth: this.targets.width / scale,
+                textureHeight: this.targets.height / scale,
                 p0, px: {x: (px.x - p0.x) / width, y: (px.y - p0.y) / width},
                 py: {x: (py.x - p0.x) / height, y: (py.y - p0.y) / height},
                 normalizer: 1 / opacity,
@@ -303,28 +364,16 @@ export function attachWindowMask(metaWindow) {
         },
 
         refresh() {
-            if (this.destroyed || this.capturing || this.idleId || !this.metaWindow.blur_actor?.visible)
+            if (this.destroyed || this.capturing || !this.metaWindow.blur_actor?.visible)
                 return;
-            this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                this.idleId = 0;
-                try {
-                    this.capture();
-                } catch (error) {
-                    this.snapshot = null;
-                    this.effect?.queue_repaint();
-                    this.warn('capture', error);
-                }
-                return GLib.SOURCE_REMOVE;
-            });
+            this.dirty = true;
+            this.effect?.queue_repaint();
         },
 
         destroy() {
             if (this.destroyed)
                 return;
             this.destroyed = true;
-            if (this.idleId)
-                GLib.source_remove(this.idleId);
-            this.idleId = 0;
             for (const [object, id] of this.connections) {
                 if (GObject.signal_handler_is_connected(object, id))
                     object.disconnect(id);
@@ -332,6 +381,7 @@ export function attachWindowMask(metaWindow) {
             this.connections = [];
             this.detachEffect();
             this.snapshot = null;
+            this.targets = null;
         },
     };
 

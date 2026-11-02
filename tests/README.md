@@ -20,22 +20,24 @@ orders, including overview panel states and focused/hovered search text,
 selection and caret colors. No running Shell, GUI interaction, settings mutation, Node.js, or Python
 is required. They do not replace compositor pixel/rendering checks.
 
-## Known-red static window-mask churn regression
+## Static window-mask churn regression
 
 Build the extension, then run `bash tests/window-mask-churn.sh`. This launches a
 private, headless GNOME Shell with isolated settings and a synthetic animated
 GTK window; it does not touch the running desktop. The test counts distinct
 mask textures during three seconds of real window damage and also checks that
-a covered window is not painted through the focused window. It is deliberately
-not part of `make check` while the bug remains unresolved.
+a covered window is not painted through the focused window. It runs separately
+from `make check` because it starts a headless compositor.
 
 On 2026-11-02 the installed implementation failed with 180 captures, 180 damage
-events and 360 distinct textures; the occlusion check passed. An experimental
-reusable-framebuffer approach reduced that to two textures but failed the
-occlusion check (the covered window leaked through) and was discarded. A
-correct fix must pass both checks as well as the manual desktop pixel, resizing,
-shadow, subsurface and scale checks in `PERSONAL.md`. Counts are expected to
-vary with frame rate. This is a regression probe, not a power measurement.
+events and 360 distinct textures; resizing added 24 textures over 12 steps. The
+occlusion check passed. An initial reusable-framebuffer experiment failed the
+occlusion check because its modelview translation accumulated across captures.
+Restoring the framebuffer matrix after each capture preserves occlusion and uses
+two textures over 180 captures and two across 12 resize steps. The check also
+exercises growth across a capacity boundary, focus-driven hide/show and teardown.
+Counts vary with frame rate. Manual desktop pixel, shadow, subsurface and scale
+checks in `PERSONAL.md` remain required; this is not a power measurement.
 
 ## Headless panel rebase
 

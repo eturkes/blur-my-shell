@@ -37,6 +37,11 @@ if ((task_rc)) || ! test -s "$BMS_MASK_TEST_RESULT"; then
     printf 'Headless mask test failed: rc=%s\n' "$task_rc" >&2
     exit 1
 fi
+if rg -q '\[BMS window alpha mask\]|Clutter-CRITICAL|Cogl-CRITICAL' "$task_root/shell.log"; then
+    rg '\[BMS window alpha mask\]|Clutter-CRITICAL|Cogl-CRITICAL' "$task_root/shell.log" >&2
+    printf 'Headless mask test reported rendering errors.\n' >&2
+    exit 1
+fi
 /usr/bin/gjs -c 'const GLib=imports.gi.GLib, System=imports.system;
 const [, data]=GLib.file_get_contents(ARGV[0]);
 const result=JSON.parse(new TextDecoder().decode(data)); print(JSON.stringify(result));
@@ -49,6 +54,15 @@ if (result.uniqueTextures > 8) {
 }
 if (result.focused !== "Mask churn background" || result.visualDelta > 10) {
     printerr("FAIL: covered window leaks into the focused window"); failed=true;
+}
+if (!result.resized || !result.sizeMatches || !result.grown || !result.grownMatches || !result.cleaned || result.resizeSteps < 4) {
+    printerr("FAIL: resize, mask geometry, or cleanup is incorrect"); failed=true;
+}
+if (result.resizeTextures > 8) {
+    printerr("FAIL: resizing continually allocates new mask textures"); failed=true;
+}
+if (!result.focusHidesBlur || !result.unfocusedShowsBlur) {
+    printerr("FAIL: focused and unfocused windows have incorrect blur visibility"); failed=true;
 }
 if (failed) System.exit(1);
 print("PASS: animated static mask reuses textures and preserves window occlusion");' "$BMS_MASK_TEST_RESULT"
