@@ -11,7 +11,6 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/aunetx/blur-my-shell)](https://github.com/aunetx/blur-my-shell/releases/latest)
 [![Weblate project translation progress](https://hosted.weblate.org/widgets/blur-my-shell/-/blur-my-shell/svg-badge.svg)](https://hosted.weblate.org/engage/blur-my-shell/)
 [![Weblate project number of languages](https://hosted.weblate.org/widget/blur-my-shell/language-badge.svg)](https://hosted.weblate.org/engage/blur-my-shell/)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/aunetx)](https://github.com/sponsors/aunetx)
 
 A GNOME Shell extension that adds a blur look to different parts of the GNOME Shell, including the top panel, dash and overview.
 
@@ -41,11 +40,13 @@ see the [removal instructions](docs/rounded-blur-removal.md).
     - uses its own selected pipeline, with effects fading as the folder opens and closes
     - follows the folder theme's corner radius and border
     - you can select the styling of the background of the folder when it is opened
+    - you can also blur the app grid behind an open folder
   - window selector when taking a screenshot
     - uses static blur only
   - popup blur
     - you can choose between static blur and dynamic blur
     - covers panel menus, the calendar and notifications popup, notification banners, OSD popups, switchers, and dialogs
+    - can also blur the dimmed screen behind system dialogs, like the power off dialog, with the selected pipeline
     - static and dynamic blur use the selected pipeline
     - you can choose a transparent, light, dark, or automatic background above the blur
     - popup blur has separate corner-radius settings for the different popup surface types
@@ -71,15 +72,15 @@ see the [removal instructions](docs/rounded-blur-removal.md).
     - but you can choose to make the focused window totally opaque so that you can enjoy your blur while always having a legible window you work on!
     - you can activate an option to better blur the windows while in overview, although it won't make the blur perfect
     - and there are two modes for blurring applications:
-      - whitelisting (by default), where only windows that are selected are blurred
-      - blacklisting, where every window is blurred, except for the selected ones
+      - by default, only the windows listed under "Blurred windows" are blurred
+      - with "Blur all windows" on, every window is blurred except the ones listed under "Excluded windows"
 
 ## Static and dynamic blur
 
 For the difference between static blur and dynamic blur:
 
 - static blur uses a static image of the wallpaper, and applies the effects that are part of a pipeline on it
-  - you can create, duplicate, rename, delete the pipelines in the first tab
+  - you can create, duplicate, rename, delete the pipelines in the Pipelines tab
   - for each pipeline, you can add effects including Dual Kawase blur, Liquid Glass, Vapor Wave, pixelization, color and noise; then configure, reorder or delete them
   - the effects order is important: the first effect in the list is applied first
   - the first pipeline (with id “pipeline_default”) is not deletable, but still configurable — if you delete a pipeline that is being used, this is the pipeline that will be switched to
@@ -93,18 +94,23 @@ For the difference between static blur and dynamic blur:
 
 Blur my Shell is designed to be compatible with the following extensions:
 
-- [Dash to Dock](https://extensions.gnome.org/extension/307/dash-to-dock/) (configurable from the Dash page)
-- [Dhruva](https://extensions.gnome.org/extension/9495/dhruva/) (configurable from the Dash page)
-- Simple Taskbar's dock (configurable from the Dash page)
-- [Dock!ng](https://extensions.gnome.org/extension/8682/dockng/) and other extensions that reuse the native dash (configurable from the Dash page)
-- [Dash to Panel](https://extensions.gnome.org/extension/1160/dash-to-panel/) (configurable from “Panel” page)
+- [Dash to Dock](https://extensions.gnome.org/extension/307/dash-to-dock/) (configurable from the Dock settings)
+- [Dhruva](https://extensions.gnome.org/extension/9495/dhruva/) (configurable from the Dock settings)
+- Simple Taskbar's dock (configurable from the Dock settings)
+- [Dock!ng](https://extensions.gnome.org/extension/8682/dockng/) and other extensions that reuse the native dash (configurable from the Dock settings)
+- [Dash to Panel](https://extensions.gnome.org/extension/1160/dash-to-panel/) (configurable from the Panel settings)
 - [Multi Monitor Bar](https://extensions.gnome.org/extension/8773/multi-monitor-bar/) (the panel on each monitor is automatically blurred)
-- [Window List](https://extensions.gnome.org/extension/602/window-list/) (configurable from “Other” page)
-- [Coverflow Alt-Tab](https://extensions.gnome.org/extension/97/coverflow-alt-tab/) (configurable from “Other” page)
-- [Hide Top Bar](https://extensions.gnome.org/extension/545/hide-top-bar/) (configurable from dedicated switch in “Panel” page)
+- [Window List](https://extensions.gnome.org/extension/602/window-list/) (configurable from the Shell tab)
+- [Coverflow Alt-Tab](https://extensions.gnome.org/extension/97/coverflow-alt-tab/) (configurable from the Shell tab)
+- [Hide Top Bar](https://extensions.gnome.org/extension/545/hide-top-bar/) (configurable from a dedicated switch in the Panel settings)
 - [Just Perfection](https://extensions.gnome.org/extension/3843/just-perfection/)
 - [Panel Corners](https://extensions.gnome.org/extension/4805/panel-corners/), although corners can't be blurred
 - [Burn my Windows](https://extensions.gnome.org/extension/4679/burn-my-windows/), although nothing is blurred either
+
+For extension developers:
+
+- if your extension has a popover whose size changes often, add the `bms-redraw-blur-instant` style class to its content element so the blur follows it right away
+- to match Blur my Shell's look, your extension can read its pipelines, which are described in [the pipeline format](docs/pipelines.md)
 
 ## Screenshots
 
@@ -122,9 +128,9 @@ If you wish to help me with this extension, there is quite a lot you can do!
 
 You can help to translate the extension into your language, either by directly opening a pull request with the additions you've made, or by using [Weblate](https://hosted.weblate.org/engage/blur-my-shell/)!
 
-### Development
+### Testing the latest version
 
-To install the extension from source:
+The version on extensions.gnome.org is often a few fixes behind GitHub. To try the latest one, you need `git`, `make`, `gettext` and `glib-compile-resources` (in `glib2-devel` on Fedora and `libglib2.0-dev-bin` on Debian and Ubuntu):
 
 ```sh
 git clone https://github.com/aunetx/blur-my-shell
@@ -132,7 +138,21 @@ cd blur-my-shell
 make install
 ```
 
-You will then need to reload GNOME Shell, for example by logging out and in again, or under Xorg, pressing `alt+f2` and typing `r`.
+You will then need to reload GNOME Shell, for example by logging out and in again, or under Xorg, pressing `alt+f2` and typing `r`. To update it later, run `git pull && make install` in the same folder.
+
+An extension installed this way isn't updated from extensions.gnome.org, so it stays on the version from GitHub until you update it yourself. To go back to the released version, install the extension from extensions.gnome.org again.
+
+### Reporting issues
+
+Before opening an issue, please:
+
+- check that it still happens with the latest version from GitHub, as described above
+- search the open and closed issues, someone may already have reported it, in which case adding your details there helps more than a new issue
+- keep to one problem per issue, and fill in the template, especially the versions and the steps to reproduce it
+
+Questions, help with your setup and ideas that aren't fully formed yet are better suited to the [discussions](https://github.com/aunetx/blur-my-shell/discussions).
+
+### Development
 
 For a disposable session that does not read or modify your desktop settings, run `make test-shell`. This will start a nested/devkit session, or a native session when run from a TTY.
 To exit from a native session press `alt+f2` and type `debugexit`.
@@ -142,7 +162,7 @@ To debug the extension, you can use Looking Glass (`alt+f2`, type `lg`); I store
 To see the extension logs, you can use:
 
 ```sh
-# for debug logs (when Debug is activated in preferences)
+# for debug logs (when Debug Logging is enabled in the preferences menu)
 journalctl -b /usr/bin/gnome-shell | grep "Blur my Shell"
 
 # for crash logs in GNOME shell
@@ -153,12 +173,6 @@ journalctl -b /usr/bin/gjs | grep blur-my-shell
 ```
 
 Just don't hesitate to open issues and pull requests, and sorry if I take some time to answer!
-
-### Donations
-
-If you want to sponsor me, first of all thank you very much! That really is not a required part of being a user, and other developers (for quite a lot of projects, them being extensions or GNOME itself) surely merit it more than me!
-
-You can use either [GitHub Sponsors](https://github.com/sponsors/aunetx) or [Ko-fi](https://ko-fi.com/aunetx); and don't hesitate to ask for more specialized support if you need to!
 
 ## Versions support
 
@@ -200,8 +214,6 @@ Much much love to (I hope I did not forget anyone...):
 - @swyknox for the awesome icon!
 - the translators, which I can't name here because there are quite a lot actually!
 - every contributor, and even those who open these ugly issues!!! Because that's maybe the most important of it all :)
-
-Of course, I am really grateful to the people sponsoring my work, it is really cool to be supported like this!
 
 And lastly, thank you, kind visitor — this is a fun project to manage :)
 

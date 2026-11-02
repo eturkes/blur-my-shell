@@ -4,8 +4,10 @@ GETTEXT_DOMAIN = $(NAME)@aunetx
 GJS ?= /usr/bin/gjs
 GNOME_EXTENSIONS ?= /usr/bin/gnome-extensions
 GLIB_COMPILE_SCHEMAS ?= /usr/bin/glib-compile-schemas
+GLIB_COMPILE_RESOURCES ?= glib-compile-resources
 VM_PATH = ~/Projects/shared/extensions
 POT = po/$(GETTEXT_DOMAIN).pot
+GRESOURCE = resources/$(NAME).gresource.xml
 UI_SOURCES = $(shell find resources/ui -type f -name '*.ui' | sort)
 EFFECT_I18N_SOURCES = $(shell find src/effects -type f -name '*.js' | sort)
 PREFERENCES_I18N_SOURCES = $(shell find src/preferences -type f -name '*.js' | sort) src/prefs.js
@@ -31,12 +33,14 @@ build: clean
 	cp metadata.json LICENSE build/source/
 	cp -a resources/icons resources/ui schemas build/source/
 	$(GLIB_COMPILE_SCHEMAS) --strict build/source/schemas
+	$(GLIB_COMPILE_RESOURCES) --sourcedir=resources --target=build/source/resources.gresource $(GRESOURCE)
 # St does not give CSS @imports the priority of the extension stylesheet.
 	awk '{ print }' $(STYLESHEETS) > build/source/stylesheet.css
 	cd build/source && $(GNOME_EXTENSIONS) pack -f . \
 			--extra-source=LICENSE \
 			--extra-source=icons \
 			--extra-source=ui \
+			--extra-source=resources.gresource \
 			$(foreach dir,$(SOURCE_DIRS),--extra-source=./$(dir)) \
 			--podir=../../po \
 			--gettext-domain=$(GETTEXT_DOMAIN) \

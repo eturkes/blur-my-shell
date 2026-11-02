@@ -3,6 +3,30 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-02 graphics investigation and upstream update
+
+The installed `76-personal.5` build caused severe graphics-memory churn in the
+existing GNOME 50.5 session: its GNOME Shell GPU client cycled between roughly
+0.5 GiB and 12 GiB, and had earlier reached roughly 25.8 GiB. Disabling this
+extension stopped the cycling; re-enabling it reproduced the rise within
+seconds. Disabling application, panel, or popup blur individually did not stop
+the churn. The extension is left disabled for the running session.
+
+The `update/upstream-20261102` branch integrates upstream master at `2930ef1`
+(including v77). Upstream commit `6c7cd51` reuses blur textures across animations
+and reduces GJS/integrated-GPU allocation churn; `17e81ef` reduces paint-time
+allocations. These are plausible remedies, not proof that this specific workload
+is fixed. Keep the previous archive in `~/.cache/blur-my-shell-backups/` and
+perform the fresh-login GPU-memory, responsiveness, audio, and visual checks
+below before accepting or enabling the updated build for routine use. GNOME
+Shell does not reliably reload changed extension modules by toggling them.
+
+The first merged build passed 29/35 native checks, with six personal overview
+contrast/highlight failures. Preserving the personal cascade behavior restored
+35/35 without weakening the checks. The private headless DTP/Luminus panel
+rebase check also passed. The standalone St test continues to emit its known
+null-backend GLib teardown diagnostics after reporting success.
+
 ## Source of truth
 
 - Checkout: `~/Projects/blur-my-shell`

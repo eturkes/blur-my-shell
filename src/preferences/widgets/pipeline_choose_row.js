@@ -1,13 +1,14 @@
 import Adw from 'gi://Adw';
-import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+import { ui_template } from '../resources.js';
+
 
 export const PipelineChooseRow = GObject.registerClass({
     GTypeName: 'PipelineChooseRow',
-    Template: GLib.uri_resolve_relative(import.meta.url, '../../ui/pipeline-choose-row.ui', GLib.UriFlags.NONE),
+    Template: ui_template('widgets/pipeline-choose-row.ui'),
     InternalChildren: [
         'pipeline_choose',
         'pipeline_model',
@@ -51,7 +52,7 @@ export const PipelineChooseRow = GObject.registerClass({
 
         this._pipeline_edit.connect(
             'clicked',
-            () => this.pipelines_page.open_effects_dialog(this.preferences.PIPELINE)
+            () => this.pipelines_page.open_pipeline(this.preferences.PIPELINE)
         );
     }
 
@@ -61,7 +62,7 @@ export const PipelineChooseRow = GObject.registerClass({
 
         const pipeline_id = this._pipeline_choose.selected_item.get_string();
         if (pipeline_id == 'create_new') {
-            const id = this.pipelines_manager.create_pipeline(_("New pipeline"));
+            const id = this.pipelines_page.create_pipeline();
             if (id)
                 this.preferences.PIPELINE = id;
         }
