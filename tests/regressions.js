@@ -455,7 +455,10 @@ for (const bmsFirst of [false, true]) {
             const overview = node(ui, 'overviewGroup', null);
             const status = node(overview, null, 'search-statusbox');
             const label = node(status, null, 'search-statustext', null, St.Label.$gtype);
-            equal(label.get_foreground_color().to_string(), '#fafafbcc', `${variant ?? 'unstyled'} status`);
+            const spinner = node(status, null, null);
+            const icon = node(status, null, null, null, St.Icon.$gtype);
+            for (const [part, actor] of [['text', label], ['spinner', spinner], ['icon', icon]])
+                equal(actor.get_foreground_color().to_string(), '#fafafbcc', `${variant ?? 'unstyled'} ${part}`);
         }
     });
     test(`search colors match surface style: BMS loaded ${order}`, () => {

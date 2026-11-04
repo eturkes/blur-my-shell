@@ -3,6 +3,13 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-04 search indicator contrast
+
+`77-personal.7` applies the same light foreground to the Searching spinner as
+to its status text. GNOME Shell 51 paints the spinner using its widget's
+inherited foreground. Native cascade checks cover both stylesheet load orders;
+fresh-session visual confirmation is pending.
+
 ## 2026-11-04 search status contrast
 
 `77-personal.6` keeps the Searching and No results status text light over the

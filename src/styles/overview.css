@@ -204,12 +204,9 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.overview-components-light #overviewGroup .search-statusbox,
-.overview-components-light #overviewGroup .search-statusbox StIcon {
-    color: rgba(0, 0, 0, 0.65) !important;
-}
-
-/* Searching and no-results messages sit directly over the wallpaper. */
+/* Search status text and its spinner sit directly over the wallpaper. */
+#overviewGroup .search-statusbox,
+#overviewGroup .search-statusbox StIcon,
 #overviewGroup .search-statustext {
     color: rgba(250, 250, 251, 0.8) !important;
 }

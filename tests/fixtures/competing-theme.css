@@ -29,3 +29,5 @@
 }
 
 .search-statustext { color: #222226; }
+
+.search-statusbox, .search-statusbox StIcon { color: #222226; }
