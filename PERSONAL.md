@@ -8,8 +8,8 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 `77-personal.4` keeps the newer Overview styling but restores light text on
 unhighlighted app-grid items, which sit over the wallpaper. Highlighted app
 labels and light-background folder labels keep the upstream dark foreground.
-The regression checks cover both stylesheet load orders. Desktop appearance
-still needs confirmation after the new build is loaded.
+The regression checks cover both stylesheet load orders. Installed on
+2026-11-04; desktop appearance still needs confirmation after a fresh login.
 
 ## 2026-11-04 upstream merge candidate
 
