@@ -27,3 +27,5 @@
 .search-provider-icon:focus:hover {
     box-shadow: inset 0 0 0 2px rgba(53, 132, 228, 0.8) !important;
 }
+
+.search-statustext { color: #222226; }

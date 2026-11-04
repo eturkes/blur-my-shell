@@ -448,6 +448,16 @@ for (const bmsFirst of [false, true]) {
             }
         }
     });
+    test(`search status text stays light: BMS loaded ${order}`, () => {
+        const node = fixture();
+        for (const variant of [null, 'transparent', 'light', 'dark']) {
+            const ui = node(null, null, variant ? `overview-components-${variant}` : null);
+            const overview = node(ui, 'overviewGroup', null);
+            const status = node(overview, null, 'search-statusbox');
+            const label = node(status, null, 'search-statustext', null, St.Label.$gtype);
+            equal(label.get_foreground_color().to_string(), '#fafafbcc', `${variant ?? 'unstyled'} status`);
+        }
+    });
     test(`search colors match surface style: BMS loaded ${order}`, () => {
         const node = fixture();
         for (const variant of ['transparent', 'light', 'dark']) {
