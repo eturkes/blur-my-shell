@@ -8,8 +8,10 @@ It is for this machine, not a release distributed through extensions.gnome.org.
 `77-personal.3` merges upstream `11bce54`, including automatic pipeline
 selection by system color scheme and upstream overview styling. The personal
 search contrast and focus-ring rules, Dash to Panel integration, and reusable
-window-mask framebuffers remain in place. The installed build is still
-`77-personal.2`; the candidate has not been installed or visually accepted.
+window-mask framebuffers remain in place. `77-personal.3` was installed on
+2026-11-04; a fresh login and visual acceptance remain pending. The previous
+installed builds and settings are saved in
+`~/.local/state/gnome-shell-workarounds/forks-upgrade-20261104-144355/`.
 
 The native checks, isolated GNOME 51 static-mask/occlusion test, and panel
 rebase check with the updated Dash to Panel and Luminus sources passed. The
