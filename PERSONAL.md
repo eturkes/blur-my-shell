@@ -3,6 +3,14 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-04 Overview label contrast
+
+`77-personal.4` keeps the newer Overview styling but restores light text on
+unhighlighted app-grid items, which sit over the wallpaper. Highlighted app
+labels and light-background folder labels keep the upstream dark foreground.
+The regression checks cover both stylesheet load orders. Desktop appearance
+still needs confirmation after the new build is loaded.
+
 ## 2026-11-04 upstream merge candidate
 
 `77-personal.3` merges upstream `11bce54`, including automatic pipeline

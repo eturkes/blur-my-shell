@@ -416,6 +416,22 @@ for (const bmsFirst of [false, true]) {
                 throw new Error('search entry focus ring must remain unchanged');
         }
     });
+    test(`unhighlighted app labels stay light: BMS loaded ${order}`, () => {
+        const node = fixture();
+        const ui = node(null, null, 'overview-components-light');
+        const overview = node(ui, 'overviewGroup', null);
+        const scroll = node(overview, null, 'apps-scroll-view');
+        const grid = node(scroll, 'appDisplay', null);
+        for (const state of [null, 'hover', 'focus', 'active', 'selected', 'highlighted', 'checked', 'drop']) {
+            const tile = node(grid, null, 'overview-tile', state);
+            const label = node(tile, null, null, null, St.Label.$gtype);
+            equal(label.get_foreground_color().to_string(), state ? '#000000d9' : '#ffffffe6',
+                `${state ?? 'normal'} app label`);
+        }
+        const folder = node(grid, null, 'overview-tile app-folder');
+        equal(node(folder, null, null, null, St.Label.$gtype).get_foreground_color().to_string(),
+            '#000000d9', 'unhighlighted folder label keeps its light-card contrast');
+    });
     test(`search colors match surface style: BMS loaded ${order}`, () => {
         const node = fixture();
         for (const variant of ['transparent', 'light', 'dark']) {

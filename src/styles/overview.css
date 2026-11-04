@@ -239,8 +239,24 @@
     color: rgba(0, 0, 0, 0.85) !important;
 }
 
-/* The Overview app grid is inside apps-scroll-view; search tiles are not. */
+/* Unhighlighted app labels sit directly over the dark Overview wallpaper. */
 .overview-components-light #overviewGroup .apps-scroll-view .overview-tile StLabel {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Folder labels remain dark because their cards have a light background. */
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile.app-folder StLabel {
+    color: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Preserve the upstream foreground for highlighted app tiles. */
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:hover StLabel,
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:focus StLabel,
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:active StLabel,
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:selected StLabel,
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:highlighted StLabel,
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:checked StLabel,
+.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:drop StLabel {
     color: rgba(0, 0, 0, 0.85) !important;
 }
 
