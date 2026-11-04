@@ -59,6 +59,43 @@ class Connections {
     get size() { return [...this.records.values()].reduce((sum, ids) => sum + ids.length, 0); }
 }
 
+test('dynamic opacity keeps focused transient ancestors opaque', () => {
+    const ApplicationsBlur = loadClass('src/components/applications/index.js',
+        'ApplicationsBlur', {});
+    const component = Object.create(ApplicationsBlur.prototype);
+    component.settings = {applications: {DYNAMIC_OPACITY: true, OPACITY: 180,
+        UNBLUR_WHEN_FULLSCREEN: false, BLUR_ON_OVERVIEW: false}};
+    component.overview_visible = false;
+    component.window_opacity = {set(actor, opacity) { actor.opacity = opacity; }};
+    const window = parent => ({
+        blur_actor: new Actor(), actor: new Actor(),
+        get_transient_for() { return parent; },
+        get_compositor_private() { return this.actor; },
+        showing_on_its_workspace() { return true; },
+    });
+    const parent = window(null), dialog = window(parent), nested = window(dialog);
+    const unrelated = window(null);
+    component.meta_windows = new Set([parent, dialog, nested, unrelated]);
+
+    component.set_focus_for_window(nested);
+    for (const active of [parent, dialog, nested]) {
+        equal(active.blur_actor.visible, false, 'focused chain must not blur');
+        equal(active.actor.opacity, 255, 'focused chain must be opaque');
+    }
+    equal(unrelated.blur_actor.visible, true, 'unrelated window remains blurred');
+    equal(unrelated.actor.opacity, 180, 'unrelated window remains translucent');
+
+    component.set_focus_for_window(unrelated);
+    equal(parent.blur_actor.visible, true, 'former parent regains blur');
+    equal(parent.actor.opacity, 180, 'former parent regains opacity setting');
+    component.settings.applications.DYNAMIC_OPACITY = false;
+    component.set_focus_for_window(dialog);
+    equal(parent.blur_actor.visible, true, 'disabled dynamic opacity preserves blur');
+    component.settings.applications.DYNAMIC_OPACITY = true;
+    component.set_focus_for_window(null);
+    equal(parent.blur_actor.visible, true, 'no focus preserves blur');
+});
+
 function panelFixture(light, count) {
     const idles = new Map();
     let nextId = 1;

@@ -96,6 +96,21 @@ export default class MaskChurnProbe extends Extension {
             .find(w => w.get_title() === 'Mask churn foreground');
         if (!other)
             throw new Error('Foreground test window disappeared');
+        GLib.file_set_contents(GLib.getenv('BMS_MASK_TEST_COMMAND'), 'open');
+        let dialog;
+        for (let i = 0; i < 50 && !dialog; i++) {
+            await delay(100);
+            dialog = [...global.blur_my_shell._applications_blur.meta_windows]
+                .find(w => w.get_title() === 'Mask churn confirmation');
+        }
+        if (!dialog)
+            throw new Error('Modal confirmation did not appear');
+        await delay(500);
+        const dialogKeepsParentOpaque = global.display.focus_window === dialog
+            && dialog.get_transient_for() === mask.metaWindow
+            && !mask.blurActor.visible && actor.opacity === 255;
+        GLib.file_set_contents(GLib.getenv('BMS_MASK_TEST_COMMAND'), 'close');
+        await delay(500);
         other.activate(global.get_current_time());
         await delay(600);
         const unfocusedShowsBlur = mask.blurActor.visible && !!mask.snapshot;
@@ -132,7 +147,7 @@ export default class MaskChurnProbe extends Extension {
             blurVisible: mask.blurActor?.visible, actorVisible: actor.visible,
             focused, inside, outside, visualDelta, resized, sizeMatches, beforeSize, afterSize, snapshotSize,
             resizeSteps: observedSizes.size, resizeTextures: resizeTextures.size, grown, grownMatches, grownSize,
-            focusHidesBlur, unfocusedShowsBlur});
+            focusHidesBlur, dialogKeepsParentOpaque, unfocusedShowsBlur});
     }
 
     async finish(result) {

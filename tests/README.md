@@ -26,7 +26,9 @@ Build the extension, then run `bash tests/window-mask-churn.sh`. This launches a
 private, headless GNOME Shell with isolated settings and a synthetic animated
 GTK window; it does not touch the running desktop. The test counts distinct
 mask textures during three seconds of real window damage and also checks that
-a covered window is not painted through the focused window. It runs separately
+a covered window is not painted through the focused window. It also opens a
+real modal transient and checks that its focused parent's blur stays hidden.
+It runs separately
 from `make check` because it starts a headless compositor.
 
 On 2026-11-02 the installed implementation failed with 180 captures, 180 damage

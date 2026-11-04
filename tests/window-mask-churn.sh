@@ -13,6 +13,7 @@ export XDG_DATA_HOME="$task_root/data" XDG_STATE_HOME="$task_root/state"
 export XDG_RUNTIME_DIR="$task_root/runtime" GSETTINGS_BACKEND=keyfile
 export BMS_MASK_TEST_RESULT="$task_root/result.json"
 export BMS_MASK_TEST_CLIENT="$task_repo/tests/window-mask-churn-client.js"
+export BMS_MASK_TEST_COMMAND="$task_root/command"
 mkdir -p "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 task_ext="$XDG_DATA_HOME/gnome-shell/extensions"
@@ -63,7 +64,7 @@ if (!result.resized || !result.sizeMatches || !result.grown || !result.grownMatc
 if (result.resizeTextures > 8) {
     printerr("FAIL: resizing continually allocates new mask textures"); failed=true;
 }
-if (!result.focusHidesBlur || !result.unfocusedShowsBlur) {
+if (!result.focusHidesBlur || !result.dialogKeepsParentOpaque || !result.unfocusedShowsBlur) {
     printerr("FAIL: focused and unfocused windows have incorrect blur visibility"); failed=true;
 }
 if (failed) System.exit(1);

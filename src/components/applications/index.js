@@ -413,8 +413,12 @@ export const ApplicationsBlur = class ApplicationsBlur {
 
         const window_actor = meta_window.get_compositor_private();
 
-        const is_focused = this.settings.applications.DYNAMIC_OPACITY
-            && meta_window === this.focused_window;
+        // A focused transient dialog belongs to its parent window. Keep the
+        // whole transient chain opaque, just as when the parent has focus.
+        let focus = this.focused_window;
+        while (focus && focus !== meta_window)
+            focus = focus.get_transient_for();
+        const is_focused = this.settings.applications.DYNAMIC_OPACITY && !!focus;
         const is_fullscreen = this.settings.applications.UNBLUR_WHEN_FULLSCREEN
             && meta_window.fullscreen;
         const visible_for_blur = meta_window.showing_on_its_workspace()
