@@ -231,32 +231,52 @@
     color: rgba(0, 0, 0, 0.55) !important;
 }
 
-/* Keep labels on app and system-action search tiles readable in light mode. */
+/* Search tiles have light text until their light highlight is shown. */
 .overview-components-light #overviewGroup .search-section .overview-tile,
 .overview-components-light #overviewGroup .search-section .overview-tile StLabel,
 .overview-components-light #overviewGroup .search-section .grid-search-result,
 .overview-components-light #overviewGroup .search-section .grid-search-result StLabel {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.overview-components-light #overviewGroup .search-section .overview-tile:hover,
+.overview-components-light #overviewGroup .search-section .overview-tile:hover StLabel,
+.overview-components-light #overviewGroup .search-section .overview-tile:focus,
+.overview-components-light #overviewGroup .search-section .overview-tile:focus StLabel,
+.overview-components-light #overviewGroup .search-section .overview-tile:active,
+.overview-components-light #overviewGroup .search-section .overview-tile:active StLabel,
+.overview-components-light #overviewGroup .search-section .overview-tile:selected,
+.overview-components-light #overviewGroup .search-section .overview-tile:selected StLabel,
+.overview-components-light #overviewGroup .search-section .overview-tile:highlighted,
+.overview-components-light #overviewGroup .search-section .overview-tile:highlighted StLabel,
+.overview-components-light #overviewGroup .search-section .overview-tile:checked,
+.overview-components-light #overviewGroup .search-section .overview-tile:checked StLabel,
+.overview-components-light #overviewGroup .search-section .overview-tile:drop,
+.overview-components-light #overviewGroup .search-section .overview-tile:drop StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:hover,
+.overview-components-light #overviewGroup .search-section .grid-search-result:hover StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:focus,
+.overview-components-light #overviewGroup .search-section .grid-search-result:focus StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:active,
+.overview-components-light #overviewGroup .search-section .grid-search-result:active StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:selected,
+.overview-components-light #overviewGroup .search-section .grid-search-result:selected StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:highlighted,
+.overview-components-light #overviewGroup .search-section .grid-search-result:highlighted StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:checked,
+.overview-components-light #overviewGroup .search-section .grid-search-result:checked StLabel,
+.overview-components-light #overviewGroup .search-section .grid-search-result:drop,
+.overview-components-light #overviewGroup .search-section .grid-search-result:drop StLabel {
     color: rgba(0, 0, 0, 0.85) !important;
 }
 
-/* Unhighlighted app labels sit directly over the dark Overview wallpaper. */
+/* App-grid labels stay light, including on hover and keyboard focus. */
 .overview-components-light #overviewGroup .apps-scroll-view .overview-tile StLabel {
     color: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* Folder labels remain dark because their cards have a light background. */
 .overview-components-light #overviewGroup .apps-scroll-view .overview-tile.app-folder StLabel {
-    color: rgba(0, 0, 0, 0.85) !important;
-}
-
-/* Preserve the upstream foreground for highlighted app tiles. */
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:hover StLabel,
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:focus StLabel,
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:active StLabel,
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:selected StLabel,
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:highlighted StLabel,
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:checked StLabel,
-.overview-components-light #overviewGroup .apps-scroll-view .overview-tile:drop StLabel {
     color: rgba(0, 0, 0, 0.85) !important;
 }
 

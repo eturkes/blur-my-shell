@@ -416,7 +416,7 @@ for (const bmsFirst of [false, true]) {
                 throw new Error('search entry focus ring must remain unchanged');
         }
     });
-    test(`unhighlighted app labels stay light: BMS loaded ${order}`, () => {
+    test(`app-grid labels stay light: BMS loaded ${order}`, () => {
         const node = fixture();
         const ui = node(null, null, 'overview-components-light');
         const overview = node(ui, 'overviewGroup', null);
@@ -425,12 +425,28 @@ for (const bmsFirst of [false, true]) {
         for (const state of [null, 'hover', 'focus', 'active', 'selected', 'highlighted', 'checked', 'drop']) {
             const tile = node(grid, null, 'overview-tile', state);
             const label = node(tile, null, null, null, St.Label.$gtype);
-            equal(label.get_foreground_color().to_string(), state ? '#000000d9' : '#ffffffe6',
+            equal(label.get_foreground_color().to_string(), '#ffffffe6',
                 `${state ?? 'normal'} app label`);
         }
         const folder = node(grid, null, 'overview-tile app-folder');
         equal(node(folder, null, null, null, St.Label.$gtype).get_foreground_color().to_string(),
             '#000000d9', 'unhighlighted folder label keeps its light-card contrast');
+    });
+    test(`search app labels follow highlight: BMS loaded ${order}`, () => {
+        const node = fixture();
+        const ui = node(null, null, 'overview-components-light');
+        const overview = node(ui, 'overviewGroup', null);
+        const section = node(overview, null, 'search-section');
+        const content = node(section, null, 'search-section-content');
+        for (const kind of ['overview-tile', 'grid-search-result']) {
+            for (const state of [null, 'hover', 'focus', 'active', 'selected', 'highlighted', 'checked', 'drop']) {
+                const tile = node(content, null, kind, state);
+                const label = node(tile, null, null, null, St.Label.$gtype);
+                const color = state ? '#000000d9' : '#ffffffe6';
+                equal(tile.get_foreground_color().to_string(), color, `${kind}/${state ?? 'normal'} tile`);
+                equal(label.get_foreground_color().to_string(), color, `${kind}/${state ?? 'normal'} label`);
+            }
+        }
     });
     test(`search colors match surface style: BMS loaded ${order}`, () => {
         const node = fixture();

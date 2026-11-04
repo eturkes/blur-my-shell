@@ -3,6 +3,13 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-04 Overview and search label states
+
+`77-personal.5` keeps app-grid labels light in all interaction states. Search
+app tiles use light text when unselected and dark text when hovered or selected;
+folder labels retain their light-card contrast. The native cascade checks cover
+both stylesheet load orders; fresh-session visual confirmation is pending.
+
 ## 2026-11-04 Overview label contrast
 
 `77-personal.4` keeps the newer Overview styling but restores light text on
