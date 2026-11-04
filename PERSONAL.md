@@ -3,6 +3,20 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-04 upstream merge candidate
+
+`77-personal.3` merges upstream `11bce54`, including automatic pipeline
+selection by system color scheme and upstream overview styling. The personal
+search contrast and focus-ring rules, Dash to Panel integration, and reusable
+window-mask framebuffers remain in place. The installed build is still
+`77-personal.2`; the candidate has not been installed or visually accepted.
+
+The native checks, isolated GNOME 51 static-mask/occlusion test, and panel
+rebase check with the updated Dash to Panel and Luminus sources passed. The
+panel check now rejects JavaScript errors and required an idempotent color
+scheme write in the Luminus fork. A fresh-session desktop check is still needed
+before considering this candidate accepted or merging this branch to master.
+
 ## 2026-11-02 graphics investigation and upstream update
 
 `77-personal.2` fixes the reproduced texture churn by painting into two reusable,

@@ -57,6 +57,11 @@ if ((task_rc)) || ! test -s "$PANEL_REBASE_RESULT"; then
     printf 'Headless Shell failed: rc=%s\n' "$task_rc" >&2
     exit 1
 fi
+if rg -q 'JS ERROR:' "$task_root/shell.log"; then
+    rg -m 1 -A 15 'JS ERROR:' "$task_root/shell.log" >&2
+    printf 'Headless panel test reported a JavaScript error.\n' >&2
+    exit 1
+fi
 set +e
 /usr/bin/gjs -c 'const GLib = imports.gi.GLib; const [, data] = GLib.file_get_contents(ARGV[0]);
 const result = JSON.parse(new TextDecoder().decode(data)); print(JSON.stringify(result));

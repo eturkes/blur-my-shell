@@ -22,6 +22,8 @@ cp "$task_repo/tests/window-mask-churn-probe.js" "$task_ext/mask-churn-probe@tes
 printf '{"uuid":"mask-churn-probe@tests","name":"Mask churn probe","description":"Isolated performance test","shell-version":["50"]}\n' > "$task_ext/mask-churn-probe@tests/metadata.json"
 task_schema="$task_ext/blur-my-shell@eturkes.com/schemas"
 /usr/bin/gsettings set org.gnome.shell welcome-dialog-last-shown-version 999
+# The private probe and the fork may target an older Shell than the host.
+/usr/bin/gsettings set org.gnome.shell disable-extension-version-validation true
 /usr/bin/gsettings set org.gnome.shell enabled-extensions "['mask-churn-probe@tests']"
 for task_key in blur enable-all static-blur blur-on-overview; do
     /usr/bin/gsettings --schemadir "$task_schema" set org.gnome.shell.extensions.blur-my-shell.applications "$task_key" true
