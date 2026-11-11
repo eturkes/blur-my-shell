@@ -1,4 +1,18 @@
 const PIPELINE_SETTINGS = ['PIPELINE', 'PIPELINE_AUTO_MODE', 'PIPELINE_LIGHT', 'PIPELINE_DARK'];
+const POPUP_BLUR_SETTINGS = [
+    'BLUR_MENUS',
+    'BLUR_CANDIDATES',
+    'BLUR_QUICK_SETTINGS',
+    'BLUR_SUBMENUS',
+    'BLUR_SCREENSHOT',
+    'BLUR_CALENDAR',
+    'BLUR_NOTIFICATIONS',
+    'BLUR_SWITCHERS',
+    'BLUR_OSDS',
+    'BLUR_RESIZE_POPUPS',
+    'BLUR_DIALOGS',
+    'BLUR_KEYBOARD',
+];
 
 function connect(settings, property, callback) {
     settings[`${property}_changed`](callback);
@@ -157,6 +171,14 @@ export function connect_component_settings(extension) {
         applications,
         () => applications.update_fullscreen_status()
     ));
+    connect(settings.applications, 'BLUR_MENUS', when_enabled(
+        applications,
+        () => applications.update_menus()
+    ));
+    connect(settings.applications, 'MENU_CORNER_RADIUS', when_enabled(
+        applications,
+        () => applications.menus.update_corner_radius()
+    ));
     connect(settings.applications, 'ENABLE_ALL', when_enabled(
         applications,
         () => applications.update_all_windows()
@@ -220,10 +242,12 @@ export function connect_component_settings(extension) {
     );
 
     connect_toggle(extension, settings.popup, popup, false);
-    connect(settings.popup, 'STATIC_BLUR', when_enabled(
-        popup,
-        () => popup.reset()
-    ));
+    ['STATIC_BLUR', ...POPUP_BLUR_SETTINGS].forEach(property =>
+        connect(settings.popup, property, when_enabled(
+            popup,
+            () => popup.reset()
+        ))
+    );
     PIPELINE_SETTINGS.forEach(property =>
         connect(settings.popup, property, when_enabled(
             popup,

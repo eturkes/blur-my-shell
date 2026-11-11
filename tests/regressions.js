@@ -34,6 +34,8 @@ class Actor {
     show() { this.visible = true; }
     hide() { this.visible = false; }
     destroy() { this.destroyed = true; }
+    remove_all_transitions() {}
+    ease({opacity, onComplete}) { this.opacity = opacity; onComplete?.(); }
 }
 
 class Connections {
@@ -124,8 +126,12 @@ function panelFixture(light, count) {
         '{update_light_text, set_panel_style_class, overview_aware_style}', {
             getRoundedCorners: () => ({}), get_component_style: value => value,
         });
+    const backgrounds = loadClass('src/components/panel/panel_background.js',
+        '{fade_panel_background, reset_panel_background_fade}', {
+            ANIMATION_TIME: 0, Clutter: {AnimationMode: {EASE_OUT_QUAD: 0}},
+        });
     const PanelBlur = loadClass('src/components/panel/index.js', 'PanelBlur', {
-        ...deps, ...styles, PanelDiscovery, connect_system_style_changes() {},
+        ...deps, ...styles, ...backgrounds, PanelDiscovery, connect_system_style_changes() {},
     });
     const connections = new Connections();
     const settings = {
@@ -306,7 +312,9 @@ test('silent DTP rebase: teardown cancels remap discovery and signals', () => {
 });
 
 const PopupBlurSurface = loadClass('src/components/popup/surface/blur_surface.js', 'PopupBlurSurface', {
-    St, has_any_style_class: (actor, classes) => classes.some(c => actor.classes.has(c)),
+    St, OPT_IN_STYLE_CLASS: 'bms-popup-blur-target',
+    has_style_class: (actor, name) => actor.classes.has(name),
+    has_any_style_class: (actor, classes) => classes.some(c => actor.classes.has(c)),
 });
 function popupFixture({alpha = 255, opacity = 255, override = false, gradient = St.GradientType.NONE,
     image = null, borderImage = null, kind = 'popup-menu-content', staticBlur = true} = {}) {
@@ -346,6 +354,15 @@ function popupFixture({alpha = 255, opacity = 255, override = false, gradient = 
     });
     return surface;
 }
+
+test('removed popup opt-in destroys even an opaque surface', () => {
+    const surface = popupFixture();
+    let destroyed = false;
+    surface.opted_in = true;
+    surface.request_destroy = () => destroyed = true;
+    surface.update();
+    equal(destroyed, true, 'removed opt-in must destroy the surface');
+});
 
 for (const kind of ['popup-menu-content', 'quick-settings', 'osd-window', 'notification-banner']) {
     for (const opacity of [255, 96]) {

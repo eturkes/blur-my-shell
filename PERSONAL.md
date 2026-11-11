@@ -3,6 +3,16 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-11 upstream v78 update
+
+`78-personal.1` merges upstream `66c7e7a` while retaining the personal UUID,
+GNOME compatibility declaration, window masks, panel integration, and popup and
+overview styling. The popup opt-in cleanup runs before opaque-background
+suppression. All 43 native checks, the isolated static-mask/occlusion check,
+and the Dash to Panel/Luminus rebase check pass on GNOME Shell 51.1. The
+running desktop still needs a fresh login and the visual checks below; no
+checked-release tag is implied by these automated results.
+
 ## 2026-11-04 search indicator contrast
 
 `77-personal.7` applies the same light foreground to the Searching spinner as

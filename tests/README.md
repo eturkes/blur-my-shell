@@ -10,7 +10,7 @@ The stylesheet path is relative to the repository, or may be absolute. Use `make
 `src/stylesheet.css`. Use the staged, flattened
 stylesheet when checking a build. Set `GJS` to override `/usr/bin/gjs`.
 
-The 35 checks execute production component methods with mocked scheduling and
+The native checks execute production component methods with mocked scheduling and
 rendering allocation, and query the real `St.ThemeNode` CSS cascade. They cover
 deferred Dash to Panel startup/teardown, activation notifications for both
 upstream and personal Dash to Panel UUIDs, silent panel rebasing/remapping,
