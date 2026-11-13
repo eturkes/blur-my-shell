@@ -3,6 +3,18 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-13 shared static blur update
+
+`78-personal.2` merges upstream `317ca56`, including shared per-monitor static
+blur and translation updates. The personal UUID, window masks, panel integration,
+and popup and overview styling remain in place. All 43 native checks and the
+isolated static-mask/occlusion and Dash to Panel/Luminus rebase checks pass on
+GNOME Shell 51.1. The mask check uses two textures across 180 captures and two
+across 12 resize steps, with zero covered-window pixel difference. A fresh login
+and the desktop visual checks below remain pending; this is not a checked-release
+tag. The previous installed tree and preferences are saved under
+`~/.local/state/blur-my-shell/backups/` before installation.
+
 ## 2026-11-11 upstream v78 update
 
 `78-personal.1` merges upstream `66c7e7a` while retaining the personal UUID,
