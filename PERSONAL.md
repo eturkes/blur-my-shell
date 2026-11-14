@@ -3,6 +3,13 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-14 translation update
+
+`78-personal.3` merges upstream `de65735`, which updates only Persian and
+Japanese translations. The personal code and compatibility declaration remain
+unchanged. All 43 native checks pass. A fresh login is needed to load the
+installed update; desktop visual acceptance remains pending.
+
 ## 2026-11-13 shared static blur update
 
 `78-personal.2` merges upstream `317ca56`, including shared per-monitor static
