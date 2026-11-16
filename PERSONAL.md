@@ -3,6 +3,21 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-16 upstream extension detection update
+
+`78-personal.4` merges upstream `3556b49`, including automatic extension
+detection, a dock-background preferences warning, running-app dot styling,
+and Japanese and Polish translations. Both Dash to Panel identities remain
+supported through the new active-extension helper. The native fixtures now
+exercise that production helper with the extension-manager lookup API.
+All 43 native checks and the isolated panel rebase and static-mask/occlusion
+checks pass on GNOME Shell 51.1. The mask check uses two textures across 179
+captures and two across 12 resize steps, with zero covered-window pixel
+difference. A fresh login and desktop visual acceptance remain pending.
+The previous installed tree and preferences are saved under
+`~/.local/state/blur-my-shell/backups/` before installation. No checked-release
+tag is implied.
+
 ## 2026-11-14 translation update
 
 `78-personal.3` merges upstream `de65735`, which updates only Persian and

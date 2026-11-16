@@ -102,7 +102,7 @@ function panelFixture(light, count) {
     const idles = new Map();
     let nextId = 1;
     const Main = {
-        panel: new Actor(), uiGroup: new Actor(), extensionManager: {},
+        panel: new Actor(), uiGroup: new Actor(), extensionManager: {extensions: new Map(), lookup(uuid) { return this.extensions.get(uuid); }},
         layoutManager: {}, sessionMode: {hasWindows: false},
         overview: {visible: false},
     };
@@ -121,6 +121,7 @@ function panelFixture(light, count) {
     };
     const deps = {Main, global, GLib: {SOURCE_REMOVE: false},
         Meta: {LaterType: {BEFORE_REDRAW: 0}}, Connections};
+    deps.is_extension_active = loadClass('src/conveniences/extensions.js', 'is_extension_active', {Main});
     const PanelDiscovery = loadClass('src/components/panel/panel_discovery.js', 'PanelDiscovery', deps);
     const styles = loadClass('src/components/panel/panel_style.js',
         '{update_light_text, set_panel_style_class, overview_aware_style}', {
@@ -208,9 +209,8 @@ for (const [uuid, state, accepted] of [
         connections.disconnect_all_for(global.dashToPanel);
         component.discovery.dash_to_panel = null;
         refreshes = 0;
-        const listener = connections.records.get(Main.extensionManager)
-            .find(record => record.signal === 'extension-state-changed');
-        listener.handler(null, {uuid, state});
+        Main.extensionManager.extensions.set(uuid, {uuid, state});
+        connections.emit(Main.extensionManager, 'extension-state-changed', {uuid, state});
         equal(refreshes, accepted ? 1 : 0, 'only active DTP identities refresh panel blur');
         const panelListeners = connections.records.get(global.dashToPanel) ?? [];
         equal(panelListeners.filter(record => record.signal === 'panels-created').length,

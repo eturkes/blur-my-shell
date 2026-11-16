@@ -211,6 +211,8 @@
     color: rgba(250, 250, 251, 0.8) !important;
 }
 
+.overview-components-light #appDisplay .app-grid-running-dot,
+.overview-components-light #overviewGroup .app-grid-running-dot,
 .overview-components-light #overviewGroup .search-section .app-grid-running-dot {
     background-color: rgba(0, 0, 0, 0.65) !important;
 }
