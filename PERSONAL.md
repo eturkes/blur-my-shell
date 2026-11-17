@@ -3,6 +3,15 @@
 This fork preserves the working local fixes for **GNOME Shell 50.5** and Luminus.
 It is for this machine, not a release distributed through extensions.gnome.org.
 
+## 2026-11-17 translation update
+
+`78-personal.5` merges upstream `555484a`, updating only Arabic and Georgian
+translations. The personal code and compatibility declaration remain unchanged.
+All 43 native checks pass, with the known null-backend teardown diagnostics.
+A fresh login is needed to load the installed update; desktop visual acceptance
+remains pending. The previous installed tree and preferences are saved under
+`~/.local/state/blur-my-shell/backups/` before installation.
+
 ## 2026-11-16 upstream extension detection update
 
 `78-personal.4` merges upstream `3556b49`, including automatic extension
